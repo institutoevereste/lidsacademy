@@ -269,7 +269,7 @@
                     "Capacitar para o registo de eventos e projetos com qualidade profissional.",
                     "Promover a criatividade e a percepção estética.",
                 ],
-                requirements: ["Não são necessários pré-requisitos, apenas vontade de aprender.", "Incentivamos a trazer o seu próprio smartphone ou câmara."],
+                requirements: ["Não são necessários pré-requisitos, apenas vontade de aprender.", "Incentivamos a trazer o seu próprio smartphone ou Câmera."],
                 targetAudience: "Colaboradores do Instituto Evereste, especialmente as equipas de comunicação e marketing.",
                 instructors: [
                     { name: "Bruno Diogo", title: "Especialista em Mídias Visuais", image: "https://i.postimg.cc/yNhgmLJK/IMG-7311.avif" },
@@ -493,7 +493,8 @@
             }
             if (e.target.closest('.enroll-btn')) {
                 const courseValue = e.target.closest('.enroll-btn').dataset.courseValue;
-                courseSelectDropdown.value = courseValue;
+                courseSelectDropdown.innerHTML = `<option value="${courseValue}" selected>${courseValue}</option>`;
+                courseSelectDropdown.disabled = true;
                 enrollmentModal.classList.remove('hidden');
             }
         });
@@ -518,12 +519,14 @@
                 });
                 showToast('Inscrição realizada com sucesso!', true);
                 inscriptionForm.reset();
-                courseSelectDropdown.value = "";
                 enrollmentModal.classList.add('hidden');
             } catch (error) {
                 console.error("Error adding document: ", error);
                 showToast('Ocorreu um erro ao enviar sua inscrição.', false);
             } finally {
+                // Re-enable dropdown and repopulate for future generic use
+                courseSelectDropdown.disabled = false;
+                renderCoursesList(); 
                 submitBtn.disabled = false;
                 submitText.classList.remove('hidden');
                 spinner.classList.add('hidden');
@@ -535,8 +538,13 @@
         closeLoginModalBtn.addEventListener('click', () => loginModal.classList.add('hidden'));
         loginModal.addEventListener('click', (e) => e.target === loginModal && loginModal.classList.add('hidden'));
 
-        closeEnrollModalBtn.addEventListener('click', () => enrollmentModal.classList.add('hidden'));
-        enrollmentModal.addEventListener('click', (e) => e.target === enrollmentModal && enrollmentModal.classList.add('hidden'));
+        closeEnrollModalBtn.addEventListener('click', () => {
+            enrollmentModal.classList.add('hidden');
+            // Re-enable dropdown and repopulate for future generic use
+            courseSelectDropdown.disabled = false;
+            renderCoursesList();
+        });
+        enrollmentModal.addEventListener('click', (e) => e.target === enrollmentModal && closeEnrollModalBtn.click());
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -572,4 +580,5 @@
     </script>
 </body>
 </html>
+
 

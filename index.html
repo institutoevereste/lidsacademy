@@ -512,9 +512,11 @@
             try {
                 await signInAnonymously(auth);
                 const formData = new FormData(inscriptionForm);
+                // Read the course value directly from the element to bypass the 'disabled' issue
+                const selectedCourse = courseSelectDropdown.value; 
                 await addDoc(collection(db, inscricoesCollectionPath), {
                     nome: formData.get('nome'), email: formData.get('email'),
-                    telefone: formData.get('telefone'), curso: formData.get('curso'),
+                    telefone: formData.get('telefone'), curso: selectedCourse, // Use the correct value here
                     timestamp: serverTimestamp()
                 });
                 showToast('Inscrição realizada com sucesso!', true);
@@ -580,5 +582,6 @@
     </script>
 </body>
 </html>
+
 
 

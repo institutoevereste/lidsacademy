@@ -99,7 +99,7 @@
                 <div class="banner-overlay"></div>
                 <div class="container mx-auto px-6 text-center p-8 max-w-4xl relative z-10">
                     <h1 class="text-4xl md:text-6xl leading-tight tracking-tight"><span class="font-thin">Capacitações</span> <span class="font-extrabold">LIDS Academy</span></h1>
-                    <p class="mt-4 text-lg md:text-xl max-w-3xl mx-auto">Inscrições abertas para os próximos treinamentos internos do Evereste.</p>
+                    <p class="mt-4 text-lg md:text-xl max-w-3xl mx-auto">Inscrições abertas para os próximos treinamentos internos do Instituto Evereste.</p>
                 </div>
             </section>
 
@@ -234,13 +234,11 @@
         import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
           apiKey: "AIzaSyB0xvVzytOx4dumokND-dr926krSO4-CqU",
           authDomain: "academylids.firebaseapp.com",
           projectId: "academylids",
-          storageBucket: "academylids.appspot.com",
+          storageBucket: "academylids.firebasestorage.app",
           messagingSenderId: "826478835273",
           appId: "1:826478835273:web:0995d64419276b932cb198",
           measurementId: "G-T2TN7FL590"
@@ -262,28 +260,56 @@
                 title: "Workshop de Fotografia",
                 subtitle: "O Olhar que Conecta Histórias",
                 summary: "Aprenda a capturar a essência dos nossos projetos com sensibilidade e técnica. Este workshop oferece as ferramentas para transformar o registo de atividades institucionais.",
-                fullDescription: "Cada imagem conta uma parte da nossa história. Este workshop é um convite para desenvolver a sua percepção e criatividade, capacitando-o a registar os nossos eventos e projetos com a qualidade e profissionalismo que eles merecem. Mais do que técnica, aprenderá a contar histórias que conectam e inspiram através das suas lentes.",
+                fullDescription: "No Instituto Evereste, cada imagem conta uma parte da nossa história. Este workshop é um convite para desenvolver a sua percepção e criatividade, capacitando-o a registar os nossos eventos e projetos com a qualidade e profissionalismo que eles merecem. Mais do que técnica, aprenderá a contar histórias que conectam e inspiram através das suas lentes.",
                 learningObjectives: [
                     "Introduzir conceitos básicos de fotografia (composição, iluminação, enquadramento).",
-                    "Desenvolver habilidades práticas em fotografia com Câmeras e telemóveis.",
+                    "Desenvolver habilidades práticas em fotografia com câmaras e telemóveis.",
                     "Capacitar para o registo de eventos e projetos com qualidade profissional.",
                     "Promover a criatividade e a percepção estética.",
                 ],
-                courseModules: [
-                    { title: "Módulo 1: Fundamentos da Fotografia", description: "Entenda o que é fotografia, o significado para a instituição e os componentes chave de uma câmera: visor, obturador, diafragma, ISO e mais." },
-                    { title: "Módulo 2: Dominando a Luz e a Exposição", description: "Aprenda a controlar a luz com o fotômetro, a entender a profundidade de campo, o balanço de brancos e a diferença entre luz dura e suave." },
-                    { title: "Módulo 3: Composição e Enquadramento", description: "Explore técnicas de composição como a Regra dos Terços, planos, ângulos e como a cor e a perspectiva transformam uma imagem." },
-                    { title: "Módulo 4: Prática e Pós-Produção", description: "Aplique os conceitos aprendidos em exercícios práticos e tenha uma introdução à edição e pós-produção de fotos com o Lightroom para refinar suas imagens." }
+                modules: [
+                    {
+                        title: "Módulo 1: Fundamentos e Equipamento",
+                        topics: [
+                            "Introdução à história e ao impacto da fotografia.",
+                            "Dominando o corpo da câmera: visor, obturador, diafragma e fotômetro.",
+                            "Entendendo ISO, lentes e o uso do flash.",
+                            "Controle de exposição e balanço de branco.",
+                        ]
+                    },
+                    {
+                        title: "Módulo 2: Composição e Iluminação",
+                        topics: [
+                            "A arte do enquadramento: planos, ângulos e lados.",
+                            "Trabalhando com a luz: compreendendo luz dura e luz suave.",
+                            "Princípios de composição de imagens: regra dos terços, formas e cores.",
+                            "Criando profundidade e perspectiva nas suas fotos.",
+                        ]
+                    },
+                    {
+                        title: "Módulo 3: Edição e Pós-Produção",
+                        topics: [
+                            "Introdução à edição e pós-produção no Lightroom.",
+                            "Análise do histograma e correção de cores.",
+                            "Definindo a intenção narrativa da sua fotografia.",
+                            "Exercícios práticos para aplicar todos os conceitos.",
+                        ]
+                    }
                 ],
-                requirements: ["Não são necessários pré-requisitos, apenas vontade de aprender.", "Incentivamos a trazer o seu próprio smartphone ou Câmera."],
-                targetAudience: "Colaboradores do Evereste, especialmente a equipe de comunicação e marketing.",
+                requirements: ["Não são necessários pré-requisitos, apenas vontade de aprender.", "Incentivamos a trazer o seu próprio smartphone ou câmara."],
+                targetAudience: "Colaboradores do Instituto Evereste, especialmente as equipas de comunicação e marketing.",
                 instructors: [
                     { name: "Bruno Diogo", title: "Especialista em Mídias Visuais", image: "https://i.postimg.cc/yNhgmLJK/IMG-7311.avif" },
                     { name: "Vinícius Sena", title: "Fotógrafo Institucional", image: "https://i.postimg.cc/bw7kHG3D/vinicius.jpg" }
                 ],
                 details: {
                     "Data": "28/10/2025", "Horário": "08:30h - 12:15h", "Carga": "4 horas", "Certificado": "Sim", "Modalidade": "Presencial e Online",
-                }
+                },
+                practicalActivities: [
+                    { title: "Exercício de Teste: Contando uma História", description: "Em duplas, os participantes tiram 3 fotos um do outro para se acostumarem com os equipamentos e explorarem a narrativa visual." },
+                    { title: "Exercício de Conhecimento: Dominando a Luz", description: "Os participantes tiram 3-5 fotos com diferentes tipos de iluminação para entender na prática os conceitos de luz, sombra e intencionalidade." },
+                    { title: "Exercício Prático Transversal: A Evolução", description: "As duplas refazem as fotos do primeiro exercício, agora aplicando todos os conceitos aprendidos, para comparar e observar a sua evolução." }
+                ]
             },
             {
                 id: "ia",
@@ -292,30 +318,56 @@
                 headerOverlayImage: "https://i.postimg.cc/bv25v2BZ/relat-rio-1.png",
                 icon: "fa-brain",
                 title: "IA Aplicada à Análise de Dados",
-                subtitle: "Método Ágil Evereste",
-                summary: "Transforme relatórios em dashboards interativos com Inteligência Artificial. Aprenda a usar ChatGPT, Gemini e GitHub para criar visualizações de dados de alto impacto.",
-                fullDescription: "Transforme Relatórios em Dashboards Interativos com Inteligência Artificial. Com o 'Método Ágil Evereste', este curso vai desmistificar a IA e dar-lhe a autonomia para converter números complexos em apresentações dinâmicas e convincentes, seguindo um fluxo prático: Dados Brutos → Estruturação com ChatGPT → Visualização com Gemini → Publicação com GitHub.",
+                subtitle: "Do Relatório ao Insight",
+                summary: "Transforme relatórios e dados brutos em dashboards web interativos e de alto impacto. Capacite-se para tomar decisões estratégicas com mais clareza e agilidade.",
+                fullDescription: "Num mundo movido por dados, a capacidade de extrair insights rápidos é um superpoder. Com o 'Método Evereste Ágil', este curso vai desmistificar a IA e dar-lhe a autonomia para converter números complexos em apresentações dinâmicas e convincentes. Deixe de ser um espectador de relatórios e torne-se um protagonista na tomada de decisões estratégicas da nossa instituição.",
                 learningObjectives: [
-                    "Entender como IA (ChatGPT e Gemini) otimiza a análise de dados.",
-                    "Utilizar o ChatGPT para extrair e organizar dados de fontes diversas.",
-                    "Transformar dados brutos em dashboards interativos com o Gemini.",
-                    "Hospedar e compartilhar seu dashboard online utilizando o GitHub Pages.",
+                    "Formular prompts eficazes no Gemini para gerar códigos de dashboards.",
+                    "Publicar um dashboard interativo na web utilizando o GitHub Pages.",
+                    "Estruturar uma apresentação de resultados de alto impacto.",
+                    "Adotar uma cultura de análise de dados ágil e orientada à ação.",
                 ],
-                courseModules: [
-                    { title: "Módulo 1: A Ciência dos Dados e o Poder da IA", description: "Entenda como IA (ChatGPT e Gemini) otimiza a análise e quais ferramentas usaremos: ChatGPT, Gemini e GitHub." },
-                    { title: "Módulo 2: Coleta e Estruturação com ChatGPT", description: "Use um comando chave no ChatGPT para extrair e organizar dados de fontes diversas (planilhas, relatórios em Word, PDFs, etc.) e obter uma base de dados limpa instantaneamente." },
-                    { title: "Módulo 3: Análise e Visualização com Gemini", description: "Use a base de dados estruturada para pedir ao Gemini para criar o código de um dashboard interativo, especificando os gráficos e KPIs desejados." },
-                    { title: "Módulo 4: Publicação e Compartilhamento com GitHub", description: "Aprenda a hospedar seu dashboard online de forma gratuita com o GitHub Pages, tornando-o acessível de qualquer lugar." },
-                    { title: "Pilar Essencial: Verificação Contínua", description: "A IA acelera, a validação humana garante a precisão. Compare os resultados da IA com os documentos originais para garantir que os valores e informações estão corretos e completos." }
+                modules: [
+                    {
+                        title: "Módulo 1: Fundamentos e Geração de Código",
+                        topics: [
+                            "Os 3 pilares do Método Evereste Ágil.",
+                            "Introdução às ferramentas de inteligência artificial.",
+                            "O desafio da gestão moderna na análise de resultados.",
+                            "Oficina Prática: Construindo o prompt perfeito para o seu dashboard.",
+                        ]
+                    },
+                    {
+                        title: "Módulo 2: Publicação e Interatividade",
+                        topics: [
+                            "Desmistificando o GitHub: repositórios e o serviço GitHub Pages.",
+                            "Oficina Prática: Publicando o seu primeiro dashboard interativo na web.",
+                            "Análise e refinamento: como fazer pequenas alterações e atualizar o seu projeto.",
+                        ]
+                    },
+                    {
+                        title: "Módulo 3: Apresentação Estratégica e Encerramento",
+                        topics: [
+                            "Técnicas para apresentar resultados usando um dashboard dinâmico.",
+                            "Simulação de apresentação para a diretoria.",
+                            "Próximos passos para aplicar o método no dia a dia.",
+                            "Transformando a cultura de apresentação de resultados.",
+                        ]
+                    }
                 ],
                 requirements: ["Computador com acesso à internet.", "Conta Google para acesso ao Gemini.", "Conta no GitHub (pode ser criada durante o curso)."],
-                targetAudience: "Equipe de gestão e liderança do Evereste.",
+                targetAudience: "Equipas de gestão e liderança do Instituto Evereste que desejam otimizar a análise e comunicação de resultados.",
                 instructors: [
                     { name: "Marllon Costa", title: "Especialista em Inovação e Dados", image: "https://i.postimg.cc/sxm4TVvF/IMG-9781.jpg" }
                 ],
                 details: {
                     "Carga": "4 horas", "Certificado": "Sim", "Modalidade": "Presencial ou Online", "Público": "Gestão e Liderança",
-                }
+                },
+                practicalActivities: [
+                    { title: "Oficina Prática 1: O Prompt Perfeito", description: "Os participantes recebem um relatório de exemplo e, com orientação, devem construir um prompt detalhado no Gemini para solicitar um dashboard." },
+                    { title: "Oficina Prática 2: O Seu Primeiro Dashboard no Ar", description: "Passo a passo guiado onde cada participante irá criar um repositório no GitHub, copiar o código do Gemini e publicar o seu dashboard online." },
+                    { title: "Simulação de Apresentação", description: "Voluntários apresentam o seu dashboard como se estivessem a falar para a diretoria, recebendo feedback construtivo." }
+                ]
             }
         ];
 
@@ -385,21 +437,35 @@
                 </div>
             `).join('');
 
-            let modulesHTML = '';
-            if (course.courseModules) {
-                const modulesContent = course.courseModules.map(module => `
-                    <div class="p-4 border-l-4 rounded-r-lg" style="border-color: ${course.themeColor}; background-color: ${course.themeColor}10;">
-                        <h4 class="font-bold text-gray-800">${module.title}</h4>
-                        <p class="mt-1 text-gray-600">${module.description}</p>
+            const modulesHTML = `
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Conteúdo Programático</h2>
+                    <div class="space-y-6">
+                        ${course.modules.map(module => `
+                            <div class="bg-gray-50 p-5 rounded-lg border-l-4" style="border-color: ${course.themeColor};">
+                                <h4 class="font-bold text-lids-primary text-lg">${module.title}</h4>
+                                <ul class="mt-3 space-y-2 list-disc list-inside text-gray-600">
+                                    ${module.topics.map(topic => `<li>${topic}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('');
-                modulesHTML = `
-                    <div class="mt-12">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Módulos do Curso</h2>
-                        <div class="space-y-4">${modulesContent}</div>
+                </div>
+            `;
+            
+            const practicalActivitiesHTML = `
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Atividades Práticas</h2>
+                    <div class="space-y-4">
+                        ${course.practicalActivities.map(activity => `
+                            <div class="bg-white p-5 rounded-lg border border-gray-200">
+                                <h4 class="font-bold flex items-center text-lg" style="color: ${course.themeColor};"><i class="fas fa-flask mr-3"></i>${activity.title}</h4>
+                                <p class="text-gray-600 mt-2 pl-8">${activity.description}</p>
+                            </div>
+                        `).join('')}
                     </div>
-                `;
-            }
+                </div>
+            `;
 
             const courseHTML = `
                 <div class="course-page">
@@ -425,10 +491,10 @@
                                 
                                 ${modulesHTML}
                                 
-                                <div class="mt-12">
-                                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Requisitos</h2>
-                                    <ul class="space-y-3 mb-8">${course.requirements.map(req => `<li class="flex items-start"><i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i><span>${req}</span></li>`).join('')}</ul>
-                                </div>
+                                ${practicalActivitiesHTML}
+
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4 mt-12">Requisitos</h2>
+                                <ul class="space-y-3">${course.requirements.map(req => `<li class="flex items-start"><i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i><span>${req}</span></li>`).join('')}</ul>
                             </div>
                             <div class="lg:col-span-1">
                                 <div class="bg-white p-6 rounded-lg shadow-xl sticky top-24">
@@ -526,10 +592,7 @@
             }
             if (e.target.closest('.enroll-btn')) {
                 const courseValue = e.target.closest('.enroll-btn').dataset.courseValue;
-                courseSelectDropdown.innerHTML = `<option value="${courseValue}" selected>${courseValue}</option>`;
-                // Instead of disabling, make it look disabled. This ensures the value is submitted.
-                courseSelectDropdown.classList.add('bg-gray-200', 'pointer-events-none');
-                courseSelectDropdown.classList.remove('bg-white');
+                courseSelectDropdown.value = courseValue;
                 enrollmentModal.classList.remove('hidden');
             }
         });
@@ -549,20 +612,17 @@
                 const formData = new FormData(inscriptionForm);
                 await addDoc(collection(db, inscricoesCollectionPath), {
                     nome: formData.get('nome'), email: formData.get('email'),
-                    telefone: formData.get('telefone'), curso: formData.get('curso'), // Now this will work reliably
+                    telefone: formData.get('telefone'), curso: formData.get('curso'),
                     timestamp: serverTimestamp()
                 });
                 showToast('Inscrição realizada com sucesso!', true);
                 inscriptionForm.reset();
+                courseSelectDropdown.value = "";
                 enrollmentModal.classList.add('hidden');
             } catch (error) {
                 console.error("Error adding document: ", error);
                 showToast('Ocorreu um erro ao enviar sua inscrição.', false);
             } finally {
-                // Re-enable dropdown and repopulate for future generic use
-                courseSelectDropdown.classList.remove('bg-gray-200', 'pointer-events-none');
-                courseSelectDropdown.classList.add('bg-white');
-                renderCoursesList(); 
                 submitBtn.disabled = false;
                 submitText.classList.remove('hidden');
                 spinner.classList.add('hidden');
@@ -574,14 +634,8 @@
         closeLoginModalBtn.addEventListener('click', () => loginModal.classList.add('hidden'));
         loginModal.addEventListener('click', (e) => e.target === loginModal && loginModal.classList.add('hidden'));
 
-        closeEnrollModalBtn.addEventListener('click', () => {
-            enrollmentModal.classList.add('hidden');
-            // Re-enable dropdown and repopulate for future generic use
-            courseSelectDropdown.classList.remove('bg-gray-200', 'pointer-events-none');
-            courseSelectDropdown.classList.add('bg-white');
-            renderCoursesList();
-        });
-        enrollmentModal.addEventListener('click', (e) => e.target === enrollmentModal && closeEnrollModalBtn.click());
+        closeEnrollModalBtn.addEventListener('click', () => enrollmentModal.classList.add('hidden'));
+        enrollmentModal.addEventListener('click', (e) => e.target === enrollmentModal && enrollmentModal.classList.add('hidden'));
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -617,4 +671,5 @@
     </script>
 </body>
 </html>
+
 

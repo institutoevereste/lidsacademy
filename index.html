@@ -1291,14 +1291,16 @@
       onSnapshot,
       Timestamp,
       serverTimestamp,
-      updateDoc
+      updateDoc,
+      deleteDoc // Adicionado deleteDoc
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { 
       getStorage, 
       ref, 
       uploadBytes,
-      getDownloadURL 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js"; // Adicionado uploadBytes
+      getDownloadURL,
+      deleteObject // Adicionado deleteObject
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
     // --- Configuração do Firebase ---
@@ -1441,6 +1443,15 @@
 
     // --- Lógica de Autenticação ---
 
+    // Define a persistência de login
+    setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        console.log("Persistência de login definida para 'local'.");
+      })
+      .catch((error) => {
+        console.error("Erro ao definir persistência de login:", error);
+      });
+
     onAuthStateChanged(auth, async (user) => {
       authReady = true; // Marca que a verificação inicial terminou
       if (user) {
@@ -1453,6 +1464,7 @@
           adminBtnHeader.classList.remove('hidden');
           adminBtnFooter.classList.remove('hidden');
         } else {
+          // Usuário não-anônimo, verifica se é admin
           isAdmin = await checkAdminStatus(user.uid);
           if (isAdmin) {
             console.log("Admin logado:", user.email);
@@ -1462,15 +1474,19 @@
             adminBtnFooter.classList.add('hidden');
             
             closeModal('modalLogin');
-            if (!adminView.classList.contains('hidden')) {
-               loadAdminPanel();
-            } else {
+            // Se o admin panel não estiver visível, mostra e carrega
+            if (adminView.classList.contains('hidden')) {
                showView('admin');
                loadAdminPanel();
             }
           } else {
-            console.log("Usuário logado (não-admin):", user.email);
+            // Logado mas não é admin (pode ser um usuário comum)
+            console.log("Usuário comum logado:", user.email);
             isAdmin = false;
+            userInfo.classList.remove('hidden');
+            userEmail.innerText = user.email;
+            adminBtnHeader.classList.add('hidden'); // Esconde "Admin"
+            adminBtnFooter.classList.add('hidden');
           }
         }
         
@@ -1480,7 +1496,7 @@
 
       } else {
         // Usuário deslogado
-        console.log("Nenhum usuário logado. A tentar login anônimo...");
+        console.log("Nenhum usuário logado. A tentar login...");
         currentUserId = null;
         isAdmin = false;
         
@@ -1489,19 +1505,24 @@
         adminBtnHeader.classList.remove('hidden');
         adminBtnFooter.classList.remove('hidden');
 
-        if (adminView.classList.contains('hidden') === false) {
+        // Se estava na view admin, volta para a 'main'
+        if (!adminView.classList.contains('hidden')) {
           showView('main');
         }
 
         try {
           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            console.log("A tentar login com Custom Token...");
             await signInWithCustomToken(auth, __initial_auth_token);
           } else {
+            console.log("A tentar login anônimo...");
             await signInAnonymously(auth);
           }
         } catch (error) {
           console.error("Erro no login anônimo ou custom token:", error);
-          loginError.innerText = "Erro de conexão. Não foi possível autenticar.";
+          if (error.code === 'auth/operation-not-allowed') {
+            console.error("LOGIN ANÔNIMO OU CUSTOM TOKEN NÃO ESTÁ ATIVADO NO FIREBASE!");
+          }
         }
       }
     });
@@ -1517,8 +1538,8 @@
       loginSubmitSpinner.classList.remove('hidden');
 
       try {
-        await setPersistence(auth, browserLocalPersistence);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // O onAuthStateChanged vai tratar de verificar se é admin e redirecionar
         showNotification('Sucesso', `Bem-vindo, ${userCredential.user.email}!`, 'success');
       } catch (error) {
         console.error("Erro de login:", error.code, error.message);
@@ -1546,6 +1567,7 @@
         localInstructors = []; 
         showView('main');
         showNotification('Até logo!', 'Você saiu da sua conta.', 'success');
+        // O onAuthStateChanged vai tratar de logar anonimamente
       } catch (error) {
         console.error("Erro ao sair:", error);
       }
@@ -1555,15 +1577,18 @@
 
     // --- Lógica de Carregamento de Dados (Público) ---
     
+    // Função helper para garantir que a autenticação (mesmo anônima) terminou
     const waitForAuth = () => {
       return new Promise((resolve, reject) => {
         if (authReady) {
           resolve();
         } else {
           const unsubscribe = onAuthStateChanged(auth, (user) => {
-            authReady = true;
-            unsubscribe();
-            resolve();
+            if (user) {
+              authReady = true;
+              unsubscribe();
+              resolve();
+            }
           });
         }
       });
@@ -1694,7 +1719,7 @@
         });
         
         instructorsLoading.classList.add('hidden');
-        // Re-ativa animações de reveal (já coberto pelo loadCourses, mas bom garantir)
+        // Re-ativa animações de reveal
         const io = new IntersectionObserver((entries) => {
           entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
         }, { threshold: 0.1 });
@@ -1723,7 +1748,6 @@
 
     // --- Lógica da Página de Detalhes do Curso ---
 
-    // ** FUNÇÃO RENDERCOURSE DETAIL RESTAURADA **
     const renderCourseDetail = (course) => {
       const detailsHTML = Object.entries(course.details || {}).map(([key, value]) => `
       <div class="flex items-start">
@@ -1879,7 +1903,7 @@
         openModal('modalCheckin');
       });
       
-      // Materiais - NOVO: Tenta abrir URL
+      // Materiais - Tenta abrir URL
       document.getElementById('btn-materials').addEventListener('click', () => {
         if (course.materials && course.materials.length > 0 && course.materials[0].url) {
           window.open(course.materials[0].url, '_blank');
@@ -1978,6 +2002,7 @@
         }
         
         if (correctPassword && inputPassword === correctPassword) {
+          // Caminho correto para dados privados do usuário
           const checkinRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'checkins', courseId);
           await setDoc(checkinRef, {
             checkedInAt: Timestamp.now()
@@ -2068,7 +2093,7 @@
         document.getElementById(tabId).classList.remove('hidden');
         
         // Recarrega dados específicos da aba ao clicar
-        if (tabId === 'admin-tab-dashboard') loadAdminDashboardData(); // Atualiza stats
+        if (tabId === 'admin-tab-dashboard') loadAdminDashboardData();
         if (tabId === 'admin-tab-courses') loadAdminCourses();
         if (tabId === 'admin-tab-enrollments') loadAdminEnrollments();
         if (tabId === 'admin-tab-instructors') loadAdminInstructors();
@@ -2080,32 +2105,333 @@
     const loadAdminPanel = () => {
       if (!isAdmin) return; 
       loadAdminDashboardData(); // Carrega dados do dashboard ao entrar no admin
-      // Outros dados são carregados ao clicar na aba
+      loadAdminCourses(); // Carrega dados dos cursos (necessário para outros modais)
+      loadAdminInstructors(); // Carrega dados dos instrutores (necessário para modal de curso)
     };
     
     // Carregar senhas no admin
-    const loadAdminCoursePasswords = async () => { /* ... (sem alterações) ... */ };
+    const loadAdminCoursePasswords = async () => {
+      if (!isAdmin) return;
+      const inputsContainer = document.getElementById('admin-passwords-inputs');
+      inputsContainer.innerHTML = '<p class="text-gray-500">A carregar cursos...</p>';
+      
+      try {
+        // Usa o cache local de cursos
+        if (localCourses.length === 0) {
+          inputsContainer.innerHTML = '<p class="text-gray-500">Nenhum curso encontrado.</p>';
+          return;
+        }
+        
+        // Busca todas as senhas de uma vez
+        const passwordsRef = collection(db, 'artifacts', appId, 'public/data/checkinPasswords');
+        const passwordsSnap = await getDocs(passwordsRef);
+        courseCheckinPasswords = {}; // Limpa e re-popula cache
+        passwordsSnap.forEach(doc => {
+          courseCheckinPasswords[doc.id] = doc.data().password;
+        });
+        
+        inputsContainer.innerHTML = ''; // Limpa o "loading"
+        localCourses.forEach(course => {
+          if (course.status === 'aberto') { // Mostra apenas cursos abertos
+            const currentPassword = courseCheckinPasswords[course.id] || '';
+            const inputHTML = `
+              <div>
+                <label class"input-label" for="pass-${course.id}">${course.title}</label>
+                <input type="text" id="pass-${course.id}" data-course-id="${course.id}" 
+                       class="input-field" value="${currentPassword}" placeholder="Senha para ${course.title}">
+              </div>
+            `;
+            inputsContainer.innerHTML += inputHTML;
+          }
+        });
+
+      } catch (error) {
+        console.error("Erro ao carregar senhas:", error);
+        inputsContainer.innerHTML = '<p class="text-red-500">Erro ao carregar senhas.</p>';
+      }
+    };
     
     // Submit senhas no admin
-    document.getElementById('admin-form-passwords').addEventListener('submit', async (e) => { /* ... (sem alterações) ... */ });
+    document.getElementById('admin-form-passwords').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isAdmin) return;
+      
+      const inputs = document.querySelectorAll('#admin-passwords-inputs input[type="text"]');
+      let promises = [];
+      
+      inputs.forEach(input => {
+        const courseId = input.dataset.courseId;
+        const password = input.value;
+        const docRef = doc(db, 'artifacts', appId, 'public/data/checkinPasswords', courseId);
+        promises.push(setDoc(docRef, { password: password }));
+      });
+      
+      try {
+        await Promise.all(promises);
+        showNotification('Sucesso', 'Senhas de check-in atualizadas.', 'success');
+      } catch (error) {
+        console.error("Erro ao salvar senhas:", error);
+        showNotification('Erro', 'Não foi possível salvar as senhas.', 'error');
+      }
+    });
 
     // Seed Database
-    document.getElementById('btn-seed-database').addEventListener('click', async () => { /* ... (sem alterações) ... */ });
+    document.getElementById('btn-seed-database').addEventListener('click', async () => {
+      if (!isAdmin) return;
+      
+      const seedInstructors = [
+          { id: "marllon", name: "Marllon Costa", title: "Técnico em Tecnologia da Informação | Designer | Marketing | Inovação e IA", image: "https://i.postimg.cc/sxm4TVvF/IMG-9781.jpg", bio: "Designer gráfico, graduando em marketing e autodidata em Inovação e IA. Trabalha e estuda sobre IA desde 2021..." },
+          { id: "vinicius", name: "Vinícius Sena", title: "Fotógrafo Documental/Eventos | Animação", image: "https://i.postimg.cc/bw7kHG3D/vinicius.jpg", bio: "Formado em Animação, estudante e entusiasta de fotografia desde 2019..." },
+          { id: "bruno", name: "Bruno Diogo", title: "Supervisor de Marketing e Mídias Visuais | Designer Gráfico", image: "https://i.postimg.cc/yNhgmLJK/IMG-7311.avif", bio: "Supervisor de Marketing e Mídias Visuais | Designer Gráfico e Digital | UX & UI | 📸 Fotografia" },
+          { id: "keven", name: "Keven Menezes", title: "Analista de TI | Designer Gráfico | Motion Design", image: "https://i.postimg.cc/fTgkcmpP/Whats-App-Image-2025-10-27-at-12-11-25.jpg", bio: "Formado em Design Gráfico e possui mais de 5 anos de experiência..." },
+          { id: "deyse", name: "Deyse Pereira", title: "Estrategista em Comunicação, Design e Gestão de Projetos", image: "https://i.postimg.cc/T1sL3bXz/IMG-7381-jpg.png", bio: "Mestre em Design de Artefatos Digitais, pós-graduanda em Gestão de Projetos..." }
+      ];
+
+      const seedCourses = [
+          {
+              id: "fotografia",
+              themeColor: "#FFC107",
+              themeColorDark: "#E6A700",
+              headerOverlayImage: "https://i.postimg.cc/3rLTy2xn/medium-shot-people-with-camera.jpg",
+              icon: "fa-camera-retro",
+              title: "Workshop de Fotografia",
+              subtitle: "O Olhar que Conecta Histórias",
+              summary: "Aprenda a capturar a essência dos nossos projetos com sensibilidade e técnica.",
+              fullDescription: "No Instituto Evereste, cada imagem conta uma parte da nossa história...",
+              learningObjectives: [
+                  "Introduzir conceitos básicos de fotografia (composição, iluminação, enquadramento).",
+                  "Desenvolver habilidades práticas em fotografia com câmaras e celulares.",
+                  "Capacitar para o registo de eventos e projetos com qualidade profissional."
+              ],
+              modules: [
+                  { title: "Módulo 1: Fundamentos e Equipamento", topics: ["Introdução à história...", "Dominando o corpo da câmera...", "Entendendo ISO..."] },
+                  { title: "Módulo 2: Composição e Iluminação", topics: ["A arte do enquadramento...", "Trabalhando com a luz...", "Princípios de composição..."] },
+                  { title: "Módulo 3: Edição e Pós-Produção", topics: ["Introdução à edição...", "Análise do histograma..."] }
+              ],
+              requirements: ["Não são necessários pré-requisitos.", "Incentivamos a trazer o seu próprio smartphone ou câmara."],
+              targetAudience: "O Curso de Fotografia é voltado para pessoas que desejam explorar o poder da imagem...",
+              instructors: [
+                  { name: "Bruno Diogo", title: "Supervisor de Marketing e Mídias Visuais | Designer Gráfico", image: "https://i.postimg.cc/yNhgmLJK/IMG-7311.avif" },
+                  { name: "Vinícius Sena", title: "Fotógrafo Documental/Eventos | Animação", image: "https://i.postimg.cc/bw7kHG3D/vinicius.jpg" }
+              ],
+              details: { "Data": "28 de Outubro de 2025", "Horário": "08:30h - 12:15h", "Carga": "4 horas", "Certificado": "Sim", "Modalidade": "Presencial e Online" },
+              practicalActivities: [
+                  { title: "Exercício de Teste: Contando uma História", description: "Em duplas, os participantes tiram 3 fotos..." },
+                  { title: "Exercício de Conhecimento: Dominando a Luz", description: "Os participantes tiram 3-5 fotos..." }
+              ],
+              status: "aberto"
+          },
+          {
+              id: "ia",
+              themeColor: "#4CAF50",
+              themeColorDark: "#388E3C",
+              headerOverlayImage: "https://i.postimg.cc/bv25v2BZ/relat-rio-1.png",
+              icon: "fa-brain",
+              title: "IA Aplicada à Análise de Dados",
+              subtitle: "Do Relatório ao Insight",
+              summary: "Transforme relatórios e dados brutos em dashboards web interativos e de alto impacto.",
+              fullDescription: "Num mundo movido por dados, a capacidade de extrair insights rápidos é um superpoder...",
+              learningObjectives: [
+                  "Formular prompts eficazes no Gemini para gerar códigos de dashboards.",
+                  "Publicar um dashboard interativo na web utilizando o GitHub Pages.",
+                  "Estruturar uma apresentação de resultados de alto impacto."
+              ],
+              modules: [
+                  { title: "Módulo 1: Fundamentos e Geração de Código", topics: ["Os 3 pilares do Método...", "Introdução às ferramentas..."] },
+                  { title: "Módulo 2: Publicação e Interatividade", topics: ["Desmistificando o GitHub...", "Oficina Prática: Publicando..."] },
+                  { title: "Módulo 3: Apresentação Estratégica", topics: ["Técnicas para apresentar...", "Simulação de apresentação..."] }
+              ],
+              requirements: ["É indispensável ter um notebook.", "Conta Google para acesso ao Gemini.", "Conta no GitHub."],
+              targetAudience: "Para todos os colaboradores, entusiastas de tecnologia...",
+              instructors: [
+                  { name: "Marllon Costa", title: "Técnico em Tecnologia da Informação | Designer | Marketing | Inovação e IA", image: "https://i.postimg.cc/sxm4TVvF/IMG-9781.jpg" }
+              ],
+              details: { "Data": "06 de Novembro de 2025", "Carga": "4 horas", "Certificado": "Sim", "Modalidade": "Presencial ou Online" },
+              practicalActivities: [
+                  { title: "Oficina Prática 1: O Prompt Perfeito", description: "Os participantes recebem um relatório de exemplo..." },
+                  { title: "Oficina Prática 2: O Seu Primeiro Dashboard no Ar", description: "Passo a passo guiado..." }
+              ],
+              status: "aberto"
+          }
+      ];
+
+      try {
+        const instructorsCollection = collection(db, 'artifacts', appId, 'public/data/instructors');
+        for (const instructor of seedInstructors) {
+          await setDoc(doc(instructorsCollection, instructor.id), instructor);
+        }
+        
+        const coursesCollection = collection(db, 'artifacts', appId, 'public/data/courses');
+        for (const course of seedCourses) {
+          await setDoc(doc(coursesCollection, course.id), course);
+        }
+        
+        showNotification('Sucesso', 'Banco de dados populado com dados iniciais.', 'success');
+        loadCourses();
+        loadInstructors();
+        loadAdminCourses();
+        loadAdminInstructors();
+      } catch (error) {
+        console.error("Erro ao popular banco de dados:", error);
+        showNotification('Erro', 'Falha ao popular o banco de dados.', 'error');
+      }
+    });
 
     // Carregar stats do Dashboard
-    const loadAdminDashboardData = async () => { /* ... (sem alterações) ... */ };
+    const loadAdminDashboardData = async () => {
+      if (!isAdmin) return;
+      try {
+        const enrollmentsSnap = await getDocs(collection(db, 'artifacts', appId, 'public/data/enrollments'));
+        document.getElementById('stat-enrollments').innerText = enrollmentsSnap.size;
+        
+        // Check-ins são privados, contagem é mais complexa (precisa de função de agregação ou contagem por usuário)
+        // Por agora, deixamos em 0 ou um placeholder
+        document.getElementById('stat-checkins').innerText = 'N/A'; // Contagem complexa
+        
+        const certificatesSnap = await getDocs(collection(db, 'artifacts', appId, 'public/data/certificates'));
+        document.getElementById('stat-certificates').innerText = certificatesSnap.size;
+      } catch (error) {
+        console.error("Erro ao carregar stats do dashboard:", error);
+      }
+    };
     
     // Carregar Cursos na Tabela Admin
-    const loadAdminCourses = () => { /* ... (sem alterações) ... */ };
+    const loadAdminCourses = () => {
+      const tableBody = document.getElementById('admin-courses-table-body');
+      tableBody.innerHTML = '';
+      if (localCourses.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4">Nenhum curso encontrado.</td></tr>';
+        return;
+      }
+      
+      localCourses.forEach(course => {
+        const statusBadge = course.status === 'aberto' ? 'badge-success' : (course.status === 'em_breve' ? 'badge-soon' : '');
+        const statusText = course.status === 'aberto' ? 'Aberto' : (course.status === 'em_breve' ? 'Em Breve' : 'Fechado');
+        const rowHTML = `
+          <tr>
+            <td>${course.title}</td>
+            <td><span class="badge ${statusBadge}">${statusText}</span></td>
+            <td>0</td> <!-- Placeholder de contagem de matriculados -->
+            <td>
+              <button class="btn btn-ghost px-2 py-1 text-sm btn-edit-course" data-id="${course.id}">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        tableBody.innerHTML += rowHTML;
+      });
+    };
     
     // Carregar Instrutores na Tabela Admin
-    const loadAdminInstructors = () => { /* ... (sem alterações) ... */ };
+    const loadAdminInstructors = () => {
+      const tableBody = document.getElementById('admin-instructors-table-body');
+      tableBody.innerHTML = '';
+      if (localInstructors.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4">Nenhum instrutor encontrado.</td></tr>';
+        return;
+      }
+      
+      localInstructors.forEach(instructor => {
+        const rowHTML = `
+          <tr>
+            <td><img src="${instructor.image}" alt="${instructor.name}" class="h-10 w-10 rounded-full object-cover" onerror="this.src='https://placehold.co/40x40/ccc/fff?text=?';"/></td>
+            <td>${instructor.name}</td>
+            <td>${instructor.title}</td>
+            <td>
+              <button class="btn btn-ghost px-2 py-1 text-sm btn-edit-instructor" data-id="${instructor.id}">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        tableBody.innerHTML += rowHTML;
+      });
+    };
     
     // Carregar Matrículas na Tabela Admin
-    const loadAdminEnrollments = () => { /* ... (sem alterações) ... */ };
+    const loadAdminEnrollments = async () => {
+      if (!isAdmin) return;
+      const tableBody = document.getElementById('admin-enrollments-table-body');
+      tableBody.innerHTML = '<tr><td colspan="7"><i class="fas fa-spinner animate-spin"></i> A carregar matrículas...</td></tr>';
+      
+      try {
+        const enrollmentsRef = collection(db, 'artifacts', appId, 'public/data/enrollments');
+        const querySnap = await getDocs(enrollmentsRef);
+        
+        if (querySnap.empty) {
+          tableBody.innerHTML = '<tr><td colspan="7">Nenhuma matrícula encontrada.</td></tr>';
+          return;
+        }
+        
+        tableBody.innerHTML = '';
+        querySnap.forEach(doc => {
+          const data = doc.data();
+          const course = localCourses.find(c => c.id === data.courseId);
+          const date = data.enrolledAt?.toDate ? data.enrolledAt.toDate().toLocaleDateString('pt-BR') : 'N/A';
+          const rowHTML = `
+            <tr>
+              <td>${doc.id.substring(0, 8).toUpperCase()}</td>
+              <td>${data.name}</td>
+              <td>${data.email}</td>
+              <td>${data.phone}</td>
+              <td>${data.setor}</td>
+              <td>${course?.title || data.courseId}</td>
+              <td>${date}</td>
+            </tr>
+          `;
+          tableBody.innerHTML += rowHTML;
+        });
+      } catch (error) {
+        console.error("Erro ao carregar matrículas:", error);
+        tableBody.innerHTML = '<tr><td colspan="7" class="text-red-600">Erro ao carregar matrículas.</td></tr>';
+      }
+    };
     
     // Carregar Certificados na Tabela Admin
-    const loadAdminCertificates = () => { /* ... (sem alterações) ... */ };
+    const loadAdminCertificates = async () => {
+      if (!isAdmin) return;
+      const tableBody = document.getElementById('admin-certificates-table-body');
+      tableBody.innerHTML = '<tr><td colspan="5"><i class="fas fa-spinner animate-spin"></i> A carregar certificados...</td></tr>';
+      
+      try {
+        const certificatesRef = collection(db, 'artifacts', appId, 'public/data/certificates');
+        const querySnap = await getDocs(certificatesRef);
+        
+        if (querySnap.empty) {
+          tableBody.innerHTML = '<tr><td colspan="5">Nenhum certificado emitido.</td></tr>';
+          return;
+        }
+        
+        tableBody.innerHTML = '';
+        querySnap.forEach(doc => {
+          const data = doc.data();
+          const date = data.issuedAt?.toDate ? data.issuedAt.toDate().toLocaleDateString('pt-BR') : 'N/A';
+          const statusBadge = data.released ? 'badge-success' : 'badge-soon';
+          const statusText = data.released ? 'Liberado' : 'Pendente';
+          const buttonText = data.released ? 'Revogar' : 'Liberar';
+          const buttonClass = data.released ? 'btn-ghost' : 'btn-primary';
+
+          const rowHTML = `
+            <tr>
+              <td>${data.studentName}</td>
+              <td>${data.courseName}</td>
+              <td>${date}</td>
+              <td><span class="badge ${statusBadge}">${statusText}</span></td>
+              <td>
+                <button class="btn ${buttonClass} px-2 py-1 text-sm btn-toggle-certificate" data-id="${doc.id}" data-released="${data.released}">
+                  ${buttonText}
+                </button>
+              </td>
+            </tr>
+          `;
+          tableBody.innerHTML += rowHTML;
+        });
+      } catch (error) {
+        console.error("Erro ao carregar certificados:", error);
+        tableBody.innerHTML = '<tr><td colspan="5" class="text-red-600">Erro ao carregar certificados.</td></tr>';
+      }
+    };
     
     // --- Listeners e Handlers para Modais de Edição Admin ---
     
@@ -2121,7 +2447,7 @@
       openModal('modalEditCourse');
     });
 
-    // NOVO: Popula checkboxes de instrutores
+    // Popula checkboxes de instrutores
     const populateInstructorCheckboxes = (assignedInstructors = []) => {
         const listContainer = document.getElementById('edit-course-instructors-list');
         listContainer.innerHTML = '';
@@ -2148,7 +2474,7 @@
         });
     };
 
-    // NOVO: Listener para o input de arquivo
+    // Listener para o input de arquivo
     const fileInput = document.getElementById('edit-course-material-file');
     const fileNameSpan = document.getElementById('edit-course-material-filename');
     fileInput.addEventListener('change', (e) => {
@@ -2170,7 +2496,7 @@
         const course = localCourses.find(c => c.id === courseId);
         if (!course) return;
         
-        // --- Preenche campos simples e complexos (como antes) ---
+        // --- Preenche campos simples e complexos ---
         document.getElementById('edit-course-id').value = course.id;
         document.getElementById('edit-course-title').value = course.title || '';
         document.getElementById('edit-course-subtitle').value = course.subtitle || '';
@@ -2188,10 +2514,10 @@
         document.getElementById('edit-course-details').value = JSON.stringify(course.details || {}, null, 2);
         // --- Fim do preenchimento ---
 
-        // NOVO: Popula e marca checkboxes dos instrutores
+        // Popula e marca checkboxes dos instrutores
         populateInstructorCheckboxes(course.instructors); 
         
-        // NOVO: Mostra info do material atual e limpa seleção de arquivo
+        // Mostra info do material atual e limpa seleção de arquivo
         const currentMaterialDiv = document.getElementById('edit-course-material-current');
         if (course.materials && course.materials.length > 0) {
             currentMaterialDiv.innerHTML = `Material Atual: <a href="${course.materials[0].url}" target="_blank" class="text-blue-600 hover:underline">${course.materials[0].name}</a>`;
@@ -2222,22 +2548,20 @@
       saveBtnSpinner.classList.remove('hidden');
 
       try {
-        // --- Parseia campos complexos (como antes) ---
+        // --- Parseia campos complexos ---
         const learningObjectives = document.getElementById('edit-course-objectives').value.split('\n').filter(Boolean); 
         const requirements = document.getElementById('edit-course-requirements').value.split('\n').filter(Boolean);
         const modules = JSON.parse(document.getElementById('edit-course-modules').value || '[]');
         const practicalActivities = JSON.parse(document.getElementById('edit-course-activities').value || '[]');
         const details = JSON.parse(document.getElementById('edit-course-details').value || '{}');
-        // --- Fim do parse ---
 
-        // NOVO: Pega instrutores selecionados
+        // Pega instrutores selecionados
         const selectedInstructors = [];
         document.querySelectorAll('#edit-course-instructors-list input:checked').forEach(checkbox => {
             selectedInstructors.push(JSON.parse(checkbox.dataset.instructorJson));
         });
 
         const courseData = {
-          // --- Campos simples (como antes) ---
           title: document.getElementById('edit-course-title').value,
           subtitle: document.getElementById('edit-course-subtitle').value,
           summary: document.getElementById('edit-course-summary').value,
@@ -2247,18 +2571,15 @@
           status: document.getElementById('edit-course-status').value,
           headerOverlayImage: document.getElementById('edit-course-image').value,
           targetAudience: document.getElementById('edit-course-audience').value,
-          // --- Fim dos campos simples ---
-          
-          // Complexos
           learningObjectives,
           requirements,
           modules,
           practicalActivities,
           details,
-          instructors: selectedInstructors // Salva instrutores selecionados
+          instructors: selectedInstructors
         };
         
-        // --- NOVO: Lógica de Upload ---
+        // --- Lógica de Upload ---
         let newMaterialData = null;
         // Define o ID do curso (cria um novo se for adição)
         const effectiveCourseId = courseId || doc(collection(db, 'temp')).id; // Usa ID existente ou gera um novo ID TEMPORÁRIO
@@ -2272,7 +2593,7 @@
             try {
                 const snapshot = await uploadBytes(storageRef, file);
                 const downloadURL = await getDownloadURL(snapshot.ref);
-                newMaterialData = { name: file.name, url: downloadURL };
+                newMaterialData = { name: file.name, url: downloadURL, path: snapshot.ref.fullPath }; // Salva o path
                 console.log('Upload concluído:', downloadURL);
                 showNotification('Sucesso', 'Material enviado com sucesso!', 'success');
             } catch (uploadError) {
@@ -2281,17 +2602,14 @@
                 throw uploadError; // Para a execução se o upload falhar
             }
         }
+        
         // Adiciona/Atualiza o material no courseData
         if (newMaterialData) {
             courseData.materials = [newMaterialData]; // Substitui/Adiciona o novo material (simplificado para um material)
         } else if (courseId) {
             // Se está editando e não enviou novo arquivo, mantém o material antigo (se existir)
             const existingCourse = localCourses.find(c => c.id === courseId);
-            if (existingCourse && existingCourse.materials) {
-                courseData.materials = existingCourse.materials;
-            } else {
-                 courseData.materials = []; // Garante que o campo existe
-            }
+            courseData.materials = existingCourse?.materials || [];
         } else {
              courseData.materials = []; // Garante que o campo existe para novos cursos
         }
@@ -2304,7 +2622,7 @@
           await updateDoc(docRef, courseData);
           showNotification('Sucesso', 'Curso atualizado.', 'success');
         } else {
-          // Adicionar (precisa usar o ID gerado para o upload se houver arquivo)
+          // Adicionar
           docRef = doc(db, 'artifacts', appId, 'public/data/courses', effectiveCourseId); // Usa o ID (existente ou novo)
           await setDoc(docRef, courseData); // Usa setDoc para garantir o ID correto
           showNotification('Sucesso', 'Curso adicionado.', 'success');
@@ -2324,24 +2642,130 @@
     });
 
     // Abrir modal de ADICIONAR Instrutor
-    document.getElementById('btn-add-instructor').addEventListener('click', () => { /* ... (sem alterações) ... */ });
+    document.getElementById('btn-add-instructor').addEventListener('click', () => {
+      document.getElementById('modalEditInstructor-form').reset();
+      document.getElementById('edit-instructor-id').value = '';
+      document.getElementById('modalEditInstructor-title').innerText = "Adicionar Novo Instrutor";
+      openModal('modalEditInstructor');
+    });
     
     // Abrir modal de EDITAR Instrutor
-    document.addEventListener('click', (e) => { /* ... (sem alterações) ... */ });
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-edit-instructor');
+      if (btn && isAdmin) {
+        const instructorId = btn.dataset.id;
+        const instructor = localInstructors.find(i => i.id === instructorId);
+        if (!instructor) return;
+        
+        document.getElementById('edit-instructor-id').value = instructor.id;
+        document.getElementById('edit-instructor-name').value = instructor.name || '';
+        document.getElementById('edit-instructor-title').value = instructor.title || '';
+        document.getElementById('edit-instructor-bio').value = instructor.bio || '';
+        document.getElementById('edit-instructor-image').value = instructor.image || '';
+        
+        document.getElementById('modalEditInstructor-title').innerText = "Editar Instrutor";
+        openModal('modalEditInstructor');
+      }
+    });
     
     // Salvar (Adicionar/Editar) Instrutor
-    document.getElementById('modalEditInstructor-form').addEventListener('submit', async (e) => { /* ... (sem alterações) ... */ });
+    document.getElementById('modalEditInstructor-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isAdmin) return;
+      
+      const instructorId = document.getElementById('edit-instructor-id').value;
+      const instructorData = {
+        name: document.getElementById('edit-instructor-name').value,
+        title: document.getElementById('edit-instructor-title').value,
+        bio: document.getElementById('edit-instructor-bio').value,
+        image: document.getElementById('edit-instructor-image').value,
+      };
+      
+      try {
+        let docRef;
+        if (instructorId) {
+          // Editar
+          docRef = doc(db, 'artifacts', appId, 'public/data/instructors', instructorId);
+          await updateDoc(docRef, instructorData);
+          showNotification('Sucesso', 'Instrutor atualizado.', 'success');
+        } else {
+          // Adicionar
+          docRef = collection(db, 'artifacts', appId, 'public/data/instructors');
+          await addDoc(docRef, instructorData);
+          showNotification('Sucesso', 'Instrutor adicionado.', 'success');
+        }
+        closeModal('modalEditInstructor');
+        loadInstructors(); // Recarrega instrutores na home
+        loadAdminInstructors(); // Recarrega tabela admin
+      } catch (error) {
+        console.error("Erro ao salvar instrutor:", error);
+        showNotification('Erro', 'Não foi possível salvar o instrutor.', 'error');
+      }
+    });
     
     // --- Listeners e Handlers para Certificados ---
     
     // Abrir modal de EMITIR Certificado
-    document.getElementById('btn-issue-certificate').addEventListener('click', () => { /* ... (sem alterações) ... */ });
+    document.getElementById('btn-issue-certificate').addEventListener('click', () => {
+      document.getElementById('modalIssueCertificate-form').reset();
+      
+      // Popula o select de cursos
+      const courseSelect = document.getElementById('issue-cert-course');
+      courseSelect.innerHTML = '<option value="">Selecione um curso...</option>';
+      localCourses.forEach(course => {
+        if (course.status === 'aberto') { // Apenas cursos abertos
+          courseSelect.innerHTML += `<option value="${course.title}">${course.title}</option>`;
+        }
+      });
+      
+      openModal('modalIssueCertificate');
+    });
 
     // Salvar (Emitir) Certificado
-    document.getElementById('modalIssueCertificate-form').addEventListener('submit', async (e) => { /* ... (sem alterações) ... */ });
+    document.getElementById('modalIssueCertificate-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isAdmin) return;
+      
+      try {
+        const certificateData = {
+          userId: document.getElementById('issue-cert-userid').value,
+          studentName: document.getElementById('issue-cert-student-name').value,
+          courseName: document.getElementById('issue-cert-course').value,
+          issuedAt: Timestamp.fromDate(new Date(document.getElementById('issue-cert-date').value)),
+          released: false // Começa como não liberado
+        };
+
+        const docRef = collection(db, 'artifacts', appId, 'public/data/certificates');
+        await addDoc(docRef, certificateData);
+        
+        showNotification('Sucesso', 'Certificado emitido e pendente de liberação.', 'success');
+        closeModal('modalIssueCertificate');
+        loadAdminCertificates(); // Recarrega a tabela
+      } catch (error) {
+        console.error("Erro ao emitir certificado:", error);
+        showNotification('Erro', 'Não foi possível emitir o certificado.', 'error');
+      }
+    });
     
-    // LIBERAR Certificado
-    document.addEventListener('click', async (e) => { /* ... (sem alterações) ... */ });
+    // LIBERAR/REVOGAR Certificado
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.btn-toggle-certificate');
+      if (btn && isAdmin) {
+        const docId = btn.dataset.id;
+        const currentStatus = btn.dataset.released === 'true';
+        const newStatus = !currentStatus;
+        
+        try {
+          const docRef = doc(db, 'artifacts', appId, 'public/data/certificates', docId);
+          await updateDoc(docRef, { released: newStatus });
+          showNotification('Sucesso', `Certificado ${newStatus ? 'Liberado' : 'Revogado'}.`, 'success');
+          loadAdminCertificates(); // Recarrega a tabela
+        } catch (error) {
+          console.error("Erro ao atualizar status do certificado:", error);
+          showNotification('Erro', 'Não foi possível atualizar o status.', 'error');
+        }
+      }
+    });
 
     // --- Lógica de Inicialização ---
     

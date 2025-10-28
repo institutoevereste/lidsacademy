@@ -344,6 +344,10 @@
     .modal-body {
       max-height: 70vh; /* Altura máxima para o corpo do modal */
       overflow-y: auto; /* Scroll interno se o conteúdo for maior */
+      padding: 1.5rem; /* 24px */
+    }
+    .modal-card-lg .modal-body {
+      max-height: 80vh;
     }
     
     /* Input Form */
@@ -369,6 +373,8 @@
     }
     textarea.input-field {
       min-height: 120px;
+      font-family: monospace;
+      font-size: 14px;
     }
 
     /* Gradient Text */
@@ -667,7 +673,8 @@
     <div class="reveal">
     <div class="card-3d p-8">
     <img src="https://i.postimg.cc/SKQh2j5n/logo-evereste-2025-horizontal-2.png" alt="Instituto Evereste" class="w-full h-auto rounded-lg p-6" style="background: rgba(0,102,204,0.03);"/>
-    <p class="mt-6" style="color: var(--text-muted);">Parceria com o Instituto Evereste para formações transformadoras e de alto impacto institucional.</p>
+    <!-- CORREÇÃO DO TEXTO ABAIXO -->
+    <p class="mt-6" style="color: var(--text-muted);">O Programa Evereste Academy é uma iniciativa do Instituto Evereste para formações transformadoras e de alto impacto institucional.</p>
     </div>
     </div>
     </div>
@@ -1014,9 +1021,9 @@
     </div>
   </div>
 
-  <!-- Modal Admin: Editar Curso -->
+  <!-- Modal Admin: Editar Curso (AGORA EXPANDIDO) -->
   <div id="modalEditCourse" class="modal-backdrop flex items-center justify-center px-4">
-    <div class="modal-card modal-card-md p-8">
+    <div class="modal-card modal-card-lg p-8"> <!-- Tamanho aumentado para -lg -->
       <form id="modalEditCourse-form">
         <input type="hidden" id="edit-course-id">
         <div class="flex items-start justify-between mb-6">
@@ -1025,6 +1032,7 @@
         </div>
         
         <div class="modal-body space-y-4">
+          <!-- Linha 1: Título e Subtítulo -->
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="input-label" for="edit-course-title">Título</label>
@@ -1035,6 +1043,7 @@
               <input id="edit-course-subtitle" type="text" class="input-field">
             </div>
           </div>
+          <!-- Linha 2: Resumo e Descrição -->
           <div>
             <label class="input-label" for="edit-course-summary">Resumo (Card)</label>
             <textarea id="edit-course-summary" class="input-field" rows="3"></textarea>
@@ -1043,6 +1052,7 @@
             <label class="input-label" for="edit-course-description">Descrição Completa</label>
             <textarea id="edit-course-description" class="input-field" rows="5"></textarea>
           </div>
+          <!-- Linha 3: Ícone, Cor, Status -->
           <div class="grid md:grid-cols-3 gap-4">
             <div>
               <label class="input-label" for="edit-course-icon">Ícone (FontAwesome)</label>
@@ -1061,10 +1071,50 @@
               </select>
             </div>
           </div>
+          <!-- Linha 4: Imagem -->
           <div>
             <label class="input-label" for="edit-course-image">URL da Imagem (Header)</label>
             <input id="edit-course-image" type="text" class="input-field" placeholder="https://...">
           </div>
+          
+          <!-- NOVOS CAMPOS -->
+          <hr class="my-4">
+          <h4 class="text-lg font-semibold">Conteúdo Detalhado</h4>
+          
+          <!-- Linha 5: Objetivos e Requisitos -->
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="input-label" for="edit-course-objectives">O que irá aprender (um por linha)</label>
+              <textarea id="edit-course-objectives" class="input-field" rows="5"></textarea>
+            </div>
+            <div>
+              <label class="input-label" for="edit-course-requirements">Requisitos (um por linha)</label>
+              <textarea id="edit-course-requirements" class="input-field" rows="5"></textarea>
+            </div>
+          </div>
+          
+          <!-- Linha 6: Público-Alvo -->
+          <div>
+            <label class="input-label" for="edit-course-audience">Público-Alvo</label>
+            <textarea id="edit-course-audience" class="input-field" rows="3"></textarea>
+          </div>
+          
+          <!-- Linha 7: JSONs (Módulos, Atividades, Detalhes) -->
+          <div class="grid md:grid-cols-3 gap-4">
+            <div>
+              <label class="input-label" for="edit-course-modules">Módulos (JSON)</label>
+              <textarea id="edit-course-modules" class="input-field" rows="10" placeholder="[{ &quot;title&quot;: &quot;M1&quot;, &quot;topics&quot;: [...] }]"></textarea>
+            </div>
+            <div>
+              <label class="input-label" for="edit-course-activities">Atividades (JSON)</label>
+              <textarea id="edit-course-activities" class="input-field" rows="10" placeholder="[{ &quot;title&quot;: &quot;A1&quot;, &quot;description&quot;: &quot;...&quot; }]"></textarea>
+            </div>
+            <div>
+              <label class="input-label" for="edit-course-details">Detalhes (JSON)</label>
+              <textarea id="edit-course-details" class="input-field" rows="10" placeholder="{ &quot;Data&quot;: &quot;...&quot;, &quot;Carga&quot;: &quot;...&quot; }"></textarea>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500">Cuidado ao editar os campos JSON. Um formato inválido causará erro ao salvar.</p>
         </div>
         
         <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-200">
@@ -1485,7 +1535,10 @@
             const colorRule = colors[colorIndex % colors.length];
             colorIndex++;
             const cardHTML = `
-              <article class... (card HTML for open courses, as before) ...>
+              <article class="card-3d p-8 reveal course-card-solid cursor-pointer" 
+                     data-course-id="${course.id}" 
+                     data-color-rule="${colorRule}"
+                     style="background-color: ${course.themeColor || 'var(--brand-blue)'};">
               <div class="flex items-center gap-3 mb-4">
                 <i class="fa-solid ${course.icon || 'fa-graduation-cap'} text-3xl"></i>
                 <div>
@@ -1605,14 +1658,47 @@
 
     // --- Lógica da Página de Detalhes do Curso ---
 
+    // ** FUNÇÃO RENDERCOURSE DETAIL RESTAURADA **
     const renderCourseDetail = (course) => {
-      // (Mesma função renderCourseDetail de antes, sem mudanças)
-      // ... (código omitido por brevidade, está idêntico ao anterior) ...
+      const detailsHTML = Object.entries(course.details || {}).map(([key, value]) => `
+      <div class="flex items-start">
+      <i class="fas fa-check mt-1 mr-3" style="color: ${course.themeColor};"></i>
+      <span><strong>${key}:</strong> ${value}</span>
+      </div>
+      `).join('');
+
+      const instructorsHTML = (course.instructors || []).map(instructor => `
+      <div class="flex items-center space-x-4">
+      <img class="h-16 w-16 rounded-full object-cover" 
+           src="${instructor.image}" alt="${instructor.name}"
+           onerror="this.src='https://placehold.co/64x64/0066cc/fff?text=${instructor.name[0]}'" />
+      <div>
+      <p class="font-bold text-gray-800">${instructor.name}</p>
+      <p class="text-sm text-gray-500">${instructor.title}</p>
+      </div>
+      </div>
+      `).join('');
+
+      const modulesHTML = (course.modules || []).map(module => `
+      <div class="bg-gray-50 p-5 rounded-lg border-l-4" style="border-color: ${course.themeColor};">
+      <h4 class="font-bold text-lg" style="color: var(--primary);">${module.title}</h4>
+      <ul class="mt-3 space-y-2 list-disc list-inside text-gray-600">
+      ${(module.topics || []).map(topic => `<li>${topic}</li>`).join('')}
+      </ul>
+      </div>
+      `).join('');
+
+      const practicalActivitiesHTML = (course.practicalActivities || []).map(activity => `
+      <div class="bg-white p-5 rounded-lg border border-gray-200">
+      <h4 class="font-bold flex items-center text-lg" style="color: ${course.themeColor};"><i class="fas fa-flask mr-3"></i>${activity.title}</h4>
+      <p class="text-gray-600 mt-2 pl-8">${activity.description}</p>
+      </div>
+      `).join('');
       
       // Botões de Ação - Lógica de Estado
       const hasCheckedIn = !!currentUserCheckins[course.id];
-      const isEnrolled = true; // Simulado
-      const isCompleted = false; // Simulado
+      const isEnrolled = true; // Simulado - idealmente viria do Firestore
+      const isCompleted = false; // Simulado - idealmente viria do Firestore
 
       const checkinBtnDisabled = !isEnrolled || hasCheckedIn;
       const materialsBtnDisabled = !isEnrolled || !hasCheckedIn;
@@ -1620,39 +1706,90 @@
       const certificateBtnDisabled = !isEnrolled || !isCompleted;
       
       const checkinBtnText = hasCheckedIn ? 'Check-in Realizado' : 'Fazer Check-in';
+
+      const courseHTML = `
+      <section class="relative text-white py-20 md:py-32 overflow-hidden course-detail-hero" style="background: linear-gradient(-45deg, ${course.themeColor}, ${course.themeColorDark || course.themeColor});">
+      <div class="absolute inset-0 bg-cover bg-center opacity-20" style="background-image: url('${course.headerOverlayImage}');"></div>
+      <div class="container mx-auto px-6 relative">
+      <p class="text-lg font-semibold mb-2"><i class="fas ${course.icon} mr-2"></i>Capacitação Evereste Academy</p>
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">${course.title}</h1>
+      <p class="mt-2 text-xl md:text-2xl opacity-90">${course.subtitle}</p>
+      </div>
+      </section>
       
-      // HTML (Omitido por brevidade, idêntico ao anterior)
-      const courseHTML = `... (HTML idêntico ao anterior) ...`;
+      <div class="container mx-auto px-6 py-16 course-detail-content">
+      <button id="back-to-courses-btn" class="mb-12 font-semibold hover:underline" style="color: ${course.themeColor};">
+      <i class="fas fa-arrow-left mr-2"></i>Voltar para todos os cursos
+      </button>
       
-      courseDetailView.innerHTML = courseHTML; // Este HTML precisa ser gerado dinamicamente
+      <div class="grid lg:grid-cols-3 gap-12">
+      <!-- Coluna Principal (Conteúdo) -->
+      <div class="lg:col-span-2">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Sobre a atividade</h2>
+      <p class="text-gray-600 leading-relaxed mb-8">${course.fullDescription}</p>
       
-      // Simulação rápida do HTML para os botões e listeners funcionarem
-      courseDetailView.innerHTML = `
-        <div class="p-8">
-          <button id="back-to-courses-btn" class="btn btn-ghost mb-8">Voltar</button>
-          <h1 class="text-4xl font-bold">${course.title}</h1>
-          <div class="mt-8 space-y-3">
-            <button id="enroll-btn-detail" class="btn btn-primary w-full" data-course-id="${course.id}" data-course-name="${course.title}">
-              <i class="fas fa-check-circle mr-2"></i>Inscreva-se
-            </button>
-            <button id="btn-checkin" class="btn btn-secondary w-full" ${checkinBtnDisabled ? 'disabled' : ''}>
-              <i class="fas ${hasCheckedIn ? 'fa-user-check' : 'fa-map-marker-alt'} mr-2"></i>${checkinBtnText}
-            </button>
-            <button id="btn-materials" class="btn btn-ghost w-full" ${materialsBtnDisabled ? 'disabled' : ''}>
-              <i class="fas fa-download mr-2"></i>Materiais
-            </button>
-            <button id="btn-evaluate" class="btn btn-ghost w-full" ${evaluateBtnDisabled ? 'disabled' : ''}>
-              <i class="fas fa-star mr-2"></i>Avaliar Instrutor
-            </button>
-            <button id="btn-certificate" class="btn btn-ghost w-full" ${certificateBtnDisabled ? 'disabled' : ''}>
-              <i class="fas fa-certificate mr-2"></i>Certificado
-            </button>
-          </div>
-          <!-- Placeholder para o resto do conteúdo -->
-        </div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">O que irá aprender</h2>
+      <ul class="space-y-3 mb-8">${(course.learningObjectives || []).map(obj => `<li class="flex items-start"><i class="fas fa-check-circle mt-1 mr-3" style="color: ${course.themeColor};"></i><span>${obj}</span></li>`).join('')}</ul>
+      
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 mt-12">Conteúdo Programático</h2>
+      <div class="space-y-6 mb-12">${modulesHTML}</div>
+      
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Atividades Práticas</h2>
+      <div class="space-y-4 mb-12">${practicalActivitiesHTML}</div>
+
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Requisitos</h2>
+      <ul class="space-y-3">${(course.requirements || []).map(req => `<li class="flex items-start"><i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i><span>${req}</span></li>`).join('')}</ul>
+      </div>
+      
+      <!-- Coluna Lateral (Ações) -->
+      <div class="lg:col-span-1">
+      <div class="bg-white p-6 rounded-lg shadow-xl sticky top-24">
+      <span class="inline-block text-sm font-semibold mb-4 px-3 py-1 rounded-full" style="background-color: ${course.themeColor}20; color: ${course.themeColor};">Inscrições abertas</span>
+      <h3 class="text-xl font-bold mb-4" style="color: var(--primary);">${course.title}</h3>
+      <div class="space-y-3 mb-6 text-gray-700">${detailsHTML}</div>
+      
+      <!-- Botões de Ação do Curso -->
+      <div class="space-y-3">
+        <button id="enroll-btn-detail" class="btn btn-primary w-full" style="background-color: ${course.themeColor};" data-course-id="${course.id}" data-course-name="${course.title}">
+          <i class="fas fa-check-circle mr-2"></i>Inscreva-se
+        </button>
+        
+        <button id="btn-checkin" class="btn btn-secondary w-full" ${checkinBtnDisabled ? 'disabled' : ''}>
+          <i class="fas ${hasCheckedIn ? 'fa-user-check' : 'fa-map-marker-alt'} mr-2"></i>${checkinBtnText}
+        </button>
+        
+        <button id="btn-materials" class="btn btn-ghost w-full" ${materialsBtnDisabled ? 'disabled' : ''}>
+          <i class="fas fa-download mr-2"></i>Materiais
+        </button>
+        
+        <button id="btn-evaluate" class="btn btn-ghost w-full" ${evaluateBtnDisabled ? 'disabled' : ''}>
+          <i class="fas fa-star mr-2"></i>Avaliar Instrutor
+        </button>
+        
+        <button id="btn-certificate" class="btn btn-ghost w-full" ${certificateBtnDisabled ? 'disabled' : ''}>
+          <i class="fas fa-certificate mr-2"></i>Certificado
+        </button>
+      </div>
+      
+      </div>
+      </div>
+      </div>
+      
+      <div class="mt-16 pt-8 border-t">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Instrutores</h2>
+      <div class="flex flex-col md:flex-row gap-8">${instructorsHTML}</div>
+      </div>
+      <div class="mt-16 pt-8 border-t">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Público-alvo</h2>
+      <p class="text-gray-600">${course.targetAudience}</p>
+      </div>
+      </div>
       `;
       
+      courseDetailView.innerHTML = courseHTML;
       showView('course');
+      
+      // Adiciona listeners aos novos botões
       addCourseDetailListeners(course);
     };
     
@@ -1676,12 +1813,29 @@
         openModal('modalCheckin');
       });
       
-      // ... (outros listeners de botões de detalhe) ...
+      // Materiais
+      document.getElementById('btn-materials').addEventListener('click', () => {
+        showNotification('Info', 'Funcionalidade de download de materiais em implementação.', 'success');
+      });
+      
+      // Avaliar
+      document.getElementById('btn-evaluate').addEventListener('click', () => {
+        const instructorName = course.instructors[0]?.name || 'o instrutor';
+        document.getElementById('evaluate-instructor-name').innerText = instructorName;
+        modalEvaluate.dataset.courseId = course.id;
+        modalEvaluate.dataset.instructorId = course.instructors[0]?.id || 'unknown';
+        openModal('modalEvaluate');
+      });
+      
+      // Certificado
+      document.getElementById('btn-certificate').addEventListener('click', () => {
+        showNotification('Info', 'Funcionalidade de download de certificado em implementação.', 'success');
+      });
     };
 
     // --- Lógica dos Modais de Ação ---
 
-    // NOVO: Modal de Inscrição (Formulário)
+    // Modal de Inscrição (Formulário)
     document.getElementById('enroll-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const courseId = modalEnroll.dataset.courseId;
@@ -1728,16 +1882,98 @@
       }
     });
 
-    // Modal de Check-in (Formulário) - (sem alterações)
+    // Modal de Check-in (Formulário)
     document.getElementById('checkin-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      // ... (lógica do check-in idêntica à anterior) ...
+      const courseId = modalCheckin.dataset.courseId;
+      const inputPassword = document.getElementById('checkin-password').value;
+      const errorEl = document.getElementById('checkin-error');
+      
+      if (!currentUserId || !courseId) {
+        showNotification('Erro', 'ID do usuário ou do curso não encontrado.', 'error');
+        return;
+      }
+
+      try {
+        let correctPassword = courseCheckinPasswords[courseId];
+        
+        if (!correctPassword && isAdmin) {
+            const passwordDocRef = doc(db, 'artifacts', appId, 'public/data/checkinPasswords', courseId);
+            const docSnap = await getDoc(passwordDocRef);
+            if (docSnap.exists() && docSnap.data().password) {
+              correctPassword = docSnap.data().password;
+              courseCheckinPasswords[courseId] = correctPassword; // Salva no cache
+            }
+        }
+        
+        if (correctPassword && inputPassword === correctPassword) {
+          const checkinRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'checkins', courseId);
+          await setDoc(checkinRef, {
+            checkedInAt: Timestamp.now()
+          });
+          
+          currentUserCheckins[courseId] = { checkedInAt: Timestamp.now() };
+          showNotification('Sucesso!', 'Check-in realizado!', 'success');
+          closeModal('modalCheckin');
+          
+          const btnCheckin = document.getElementById('btn-checkin');
+          const btnMaterials = document.getElementById('btn-materials');
+          const btnEvaluate = document.getElementById('btn-evaluate');
+          
+          if (btnCheckin) {
+            btnCheckin.disabled = true;
+            btnCheckin.innerHTML = '<i class="fas fa-user-check mr-2"></i>Check-in Realizado';
+          }
+          if (btnMaterials) btnMaterials.disabled = false;
+          if (btnEvaluate) btnEvaluate.disabled = false;
+          
+        } else {
+          errorEl.innerText = "Senha incorreta. Tente novamente.";
+          errorEl.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error("Erro ao fazer check-in:", error);
+        errorEl.innerText = "Erro ao validar a senha. (O admin já definiu uma?)";
+        errorEl.classList.remove('hidden');
+      }
     });
     
-    // Modal de Avaliação (Formulário) - (sem alterações)
+    // Modal de Avaliação (Formulário)
     document.getElementById('evaluate-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      // ... (lógica da avaliação idêntica à anterior) ...
+      const courseId = modalEvaluate.dataset.courseId;
+      const instructorId = modalEvaluate.dataset.instructorId;
+      const rating = document.querySelector('input[name="rating"]:checked');
+      const comment = document.getElementById('evaluate-comment').value;
+
+      if (!rating) {
+        showNotification('Erro', 'Por favor, selecione uma nota (de 1 a 5 estrelas).', 'error');
+        return;
+      }
+      if (!currentUserId || !courseId || !instructorId) {
+        showNotification('Erro', 'Informações em falta (usuário, curso ou instrutor).', 'error');
+        return;
+      }
+
+      try {
+        const evaluationRef = doc(collection(db, 'artifacts', appId, 'public/data/evaluations'));
+        await setDoc(evaluationRef, {
+          userId: currentUserId,
+          courseId: courseId,
+          instructorId: instructorId,
+          rating: parseInt(rating.value, 10),
+          comment: comment,
+          createdAt: Timestamp.now()
+        });
+        
+        showNotification('Obrigado!', 'Sua avaliação foi enviada com sucesso.', 'success');
+        closeModal('modalEvaluate');
+        document.getElementById('evaluate-form').reset();
+        
+      } catch (error) {
+        console.error("Erro ao enviar avaliação:", error);
+        document.getElementById('evaluate-error').classList.remove('hidden');
+      }
     });
 
     // --- Lógica do Painel de Admin ---
@@ -1768,17 +2004,186 @@
       loadAdminDashboardData();
     };
     
-    // (loadAdminCoursePasswords e submit senhas - idênticos)
-    document.getElementById('admin-form-passwords').addEventListener('submit', async (e) => { /* ... */ });
-    const loadAdminCoursePasswords = async () => { /* ... */ };
+    const loadAdminCoursePasswords = async () => {
+      if (!isAdmin) return;
+      
+      const container = document.getElementById('admin-passwords-inputs');
+      container.innerHTML = ''; 
+      
+      try {
+        if (localCourses.length === 0) {
+          await loadCourses(); 
+        }
 
-    // (Seed Database - idêntico)
-    document.getElementById('btn-seed-database').addEventListener('click', async () => { /* ... */ });
+        const passwordsRef = collection(db, 'artifacts', appId, 'public/data/checkinPasswords');
+        const querySnap = await getDocs(passwordsRef);
+        
+        courseCheckinPasswords = {}; 
+        querySnap.forEach((docSnap) => {
+          if (docSnap.data().password) {
+            courseCheckinPasswords[docSnap.id] = docSnap.data().password;
+          }
+        });
 
-    // (loadAdminDashboardData - idêntico)
-    const loadAdminDashboardData = async () => { /* ... */ };
+        localCourses.forEach(course => {
+          const currentPassword = courseCheckinPasswords[course.id] || '';
+          const inputGroup = `
+            <div>
+              <label class="input-label" for="pass-${course.id}">${course.title}</label>
+              <input id="pass-${course.id}" type="text" class="input-field" 
+                     data-course-id="${course.id}" 
+                     value="${currentPassword}"
+                     placeholder="Senha para ${course.title}">
+            </div>
+          `;
+          container.innerHTML += inputGroup;
+        });
+        
+      } catch (error) {
+        console.error("Erro ao carregar senhas:", error);
+        container.innerHTML = '<p class="text-red-600">Erro ao carregar dados.</p>';
+      }
+    };
     
-    // Carrega Cursos na Tabela Admin (Atualizado com botão de editar)
+    document.getElementById('admin-form-passwords').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!isAdmin) return;
+      
+      const inputs = document.querySelectorAll('#admin-form-passwords input[data-course-id]');
+      const promises = [];
+      const newPasswordsCache = {};
+
+      inputs.forEach(input => {
+        const courseId = input.dataset.courseId;
+        const newPassword = input.value;
+        const passwordDocRef = doc(db, 'artifacts', appId, 'public/data/checkinPasswords', courseId);
+        promises.push(setDoc(passwordDocRef, { password: newPassword }));
+        newPasswordsCache[courseId] = newPassword;
+      });
+
+      try {
+        await Promise.all(promises); 
+        courseCheckinPasswords = newPasswordsCache; 
+        showNotification('Sucesso', 'Senhas de check-in atualizadas.', 'success');
+      } catch (error) {
+        console.error("Erro ao salvar senhas:", error);
+        showNotification('Erro', 'Não foi possível salvar as senhas.', 'error');
+      }
+    });
+
+    document.getElementById('btn-seed-database').addEventListener('click', async () => {
+      if (!isAdmin) return;
+      if (!confirm('Tem certeza que deseja adicionar os dados iniciais?')) return;
+      
+      console.log('Iniciando o seeding do banco de dados...');
+      const coursesToSeed = [
+        {
+          id: "fotografia",
+          themeColor: "#FFC107",
+          themeColorDark: "#E6A700",
+          headerOverlayImage: "https://i.postimg.cc/3rLTy2xn/medium-shot-people-with-camera.jpg",
+          icon: "fa-camera-retro",
+          title: "Workshop de Fotografia",
+          subtitle: "O Olhar que Conecta Histórias",
+          summary: "Aprenda a capturar a essência dos nossos projetos com sensibilidade e técnica.",
+          fullDescription: "No Instituto Evereste, cada imagem conta uma parte da nossa história. Este workshop é um convite para desenvolver a sua percepção e criatividade...",
+          learningObjectives: [
+            "Introduzir conceitos básicos de fotografia (composição, iluminação).",
+            "Desenvolver habilidades práticas em fotografia com câmaras e celulares.",
+            "Capacitar para o registo de eventos e projetos com qualidade profissional.",
+          ],
+          modules: [
+            { title: "Módulo 1: Fundamentos e Equipamento", topics: ["Introdução à história e ao impacto da fotografia.", "Dominando o corpo da câmera.", "Entendendo ISO, lentes e o uso do flash."] },
+            { title: "Módulo 2: Composição e Iluminação", topics: ["A arte do enquadramento.", "Trabalhando com a luz.", "Princípios de composição de imagens."] },
+            { title: "Módulo 3: Edição e Pós-Produção", topics: ["Introdução à edição no Lightroom.", "Análise do histograma e correção de cores.", "Exercícios práticos."] }
+          ],
+          requirements: ["Não são necessários pré-requisitos.", "Incentivamos a trazer o seu próprio smartphone ou câmara."],
+          targetAudience: "O Curso de Fotografia é voltado para pessoas que desejam explorar o poder da imagem como forma de expressão...",
+          instructors: [
+            { name: "Bruno Diogo", title: "Supervisor de Marketing e Mídias Visuais", image: "https://i.postimg.cc/yNhgmLJK/IMG-7311.avif" },
+            { name: "Vinícius Sena", title: "Fotógrafo Documental/Eventos", image: "https://i.postimg.cc/bw7kHG3D/vinicius.jpg" }
+          ],
+          details: { "Data": "28 de Outubro de 2025", "Horário": "08:30h - 12:15h", "Carga": "4 horas", "Certificado": "Sim", "Modalidade": "Presencial e Online" },
+          practicalActivities: [
+            { title: "Exercício de Teste: Contando uma História", description: "Em duplas, os participantes tiram 3 fotos um do outro." },
+            { title: "Exercício de Conhecimento: Dominando a Luz", description: "Os participantes tiram 3-5 fotos com diferentes tipos de iluminação." }
+          ],
+          status: "aberto"
+        },
+        {
+          id: "ia",
+          themeColor: "#4CAF50",
+          themeColorDark: "#388E3C",
+          headerOverlayImage: "https://i.postimg.cc/bv25v2BZ/relat-rio-1.png",
+          icon: "fa-brain",
+          title: "IA Aplicada à Análise de Dados",
+          subtitle: "Do Relatório ao Insight",
+          summary: "Transforme relatórios e dados brutos em dashboards web interativos e de alto impacto.",
+          fullDescription: "Num mundo movido por dados, a capacidade de extrair insights rápidos é um superpoder...",
+          learningObjectives: [
+            "Formular prompts eficazes no Gemini para gerar códigos de dashboards.",
+            "Publicar um dashboard interativo na web utilizando o GitHub Pages.",
+            "Estruturar uma apresentação de resultados de alto impacto.",
+          ],
+          modules: [
+            { title: "Módulo 1: Fundamentos e Geração de Código", topics: ["Os 3 pilares do Método Evereste Ágil.", "Introdução às ferramentas de IA.", "Oficina Prática: Construindo o prompt perfeito."] },
+            { title: "Módulo 2: Publicação e Interatividade", topics: ["Desmistificando o GitHub Pages.", "Oficina Prática: Publicando o seu primeiro dashboard.", "Análise e refinamento."] },
+            { title: "Módulo 3: Apresentação Estratégica", topics: ["Técnicas para apresentar resultados.", "Simulação de apresentação para a diretoria.", "Transformando a cultura de apresentação de resultados."] }
+          ],
+          requirements: ["É indispensável ter um notebook.", "Conta Google (Gemini) e conta no GitHub."],
+          targetAudience: "Para todos os colaboradores, entusiastas de tecnologia e qualquer pessoa curiosa sobre o poder da IA.",
+          instructors: [
+            { name: "Marllon Costa", title: "Técnico em Tecnologia da Informação | Inovação e IA", image: "https://i.postimg.cc/sxm4TVvF/IMG-9781.jpg" }
+          ],
+          details: { "Data": "06 de Novembro de 2025", "Carga": "4 horas", "Certificado": "Sim", "Modalidade": "Presencial ou Online" },
+          practicalActivities: [
+            { title: "Oficina Prática 1: O Prompt Perfeito", description: "Construir um prompt detalhado no Gemini para solicitar um dashboard." },
+            { title: "Oficina Prática 2: O Seu Primeiro Dashboard no Ar", description: "Publicar o seu dashboard online via GitHub." }
+          ],
+          status: "aberto"
+        }
+      ];
+      const instructorsToSeed = [
+        { id: "marllon", name: "Marllon Costa", title: "Técnico em Tecnologia da Informação | Designer | Marketing | Inovação e IA", image: "https://i.postimg.cc/sxm4TVvF/IMG-9781.jpg", bio: "Designer gráfico, graduando em marketing e autodidata em Inovação e IA..." },
+        { id: "vinicius", name: "Vinícius Sena", title: "Fotógrafo Documental/Eventos | Animação", image: "https://i.postimg.cc/bw7kHG3D/vinicius.jpg", bio: "Formado em Animação, estudante e entusiasta de fotografia desde 2019..." },
+        { id: "bruno", name: "Bruno Diogo", title: "Supervisor de Marketing e Mídias Visuais | Designer Gráfico", image: "https://i.postimg.cc/yNhgmLJK/IMG-7311.avif", bio: "Designer Gráfico e Digital | UX & UI | 📸 Fotografia" },
+        { id: "keven", name: "Keven Menezes", title: "Analista de TI | Designer Gráfico | Motion Design", image: "https://i.postimg.cc/fTgkcmpP/Whats-App-Image-2025-10-27-at-12-11-25.jpg", bio: "Formado em Design Gráfico e possui mais de 5 anos de experiência..." },
+        { id: "deyse", name: "Deyse Pereira", title: "Estrategista em Comunicação, Design e Gestão de Projetos", image: "https://i.postimg.cc/T1sL3bXz/IMG-7381-jpg.png", bio: "Mestre em Design de Artefatos Digitais, pós-graduanda em Gestão de Projetos..." }
+      ];
+      try {
+        const coursePromises = coursesToSeed.map(course => {
+          const courseRef = doc(db, 'artifacts', appId, 'public/data/courses', course.id);
+          return setDoc(courseRef, course);
+        });
+        const instructorPromises = instructorsToSeed.map(instructor => {
+          const instructorRef = doc(db, 'artifacts', appId, 'public/data/instructors', instructor.id);
+          return setDoc(instructorRef, instructor);
+        });
+        await Promise.all([...coursePromises, ...instructorPromises]);
+        showNotification('Sucesso!', 'Banco de dados populado com cursos e instrutores iniciais.', 'success');
+        console.log('Seeding concluído com sucesso.');
+        loadCourses();
+        loadInstructors();
+      } catch (error) {
+        console.error('Erro ao popular o banco de dados:', error);
+        showNotification('Erro de Seeding', 'Não foi possível popular o banco de dados.', 'error');
+      }
+    });
+
+
+    const loadAdminDashboardData = async () => {
+      if (!isAdmin) return;
+      try {
+        const enrollmentsSnap = await getDocs(collection(db, 'artifacts', appId, 'public/data/enrollments'));
+        const certificatesSnap = await getDocs(collection(db, 'artifacts', appId, 'public/data/certificates'));
+        document.getElementById('stat-enrollments').innerText = enrollmentsSnap.size;
+        document.getElementById('stat-certificates').innerText = certificatesSnap.size;
+        document.getElementById('stat-checkins').innerText = '...'; 
+      } catch(error) {
+        console.error("Erro ao carregar stats do dashboard:", error);
+      }
+    };
+    
     const loadAdminCourses = () => {
       if (!isAdmin) return;
       const tbody = document.getElementById('admin-courses-table-body');
@@ -1803,7 +2208,6 @@
       });
     };
     
-    // Carrega Instrutores na Tabela Admin (Atualizado com botão de editar)
     const loadAdminInstructors = () => {
       if (!isAdmin) return;
       const tbody = document.getElementById('admin-instructors-table-body');
@@ -1828,7 +2232,6 @@
       });
     };
     
-    // Carrega Matrículas na Tabela Admin (Atualizado com novos campos)
     const loadAdminEnrollments = () => {
       if (!isAdmin) return;
       const tbody = document.getElementById('admin-enrollments-table-body');
@@ -1862,7 +2265,6 @@
       });
     };
     
-    // Carrega Certificados na Tabela Admin (Atualizado com botão de liberar)
     const loadAdminCertificates = () => {
       if (!isAdmin) return;
       const tbody = document.getElementById('admin-certificates-table-body');
@@ -1906,7 +2308,7 @@
       });
     };
     
-    // --- NOVO: Listeners e Handlers para Modais de Edição Admin ---
+    // --- Listeners e Handlers para Modais de Edição Admin ---
     
     // Abrir modal de ADICIONAR Curso
     document.getElementById('btn-add-course').addEventListener('click', () => {
@@ -1916,7 +2318,7 @@
       openModal('modalEditCourse');
     });
 
-    // Abrir modal de EDITAR Curso
+    // Abrir modal de EDITAR Curso (EXPANDIDO)
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('.btn-edit-course');
       if (btn && isAdmin) {
@@ -1924,6 +2326,7 @@
         const course = localCourses.find(c => c.id === courseId);
         if (!course) return;
         
+        // Simples
         document.getElementById('edit-course-id').value = course.id;
         document.getElementById('edit-course-title').value = course.title || '';
         document.getElementById('edit-course-subtitle').value = course.subtitle || '';
@@ -1933,31 +2336,57 @@
         document.getElementById('edit-course-color').value = course.themeColor || '';
         document.getElementById('edit-course-status').value = course.status || 'fechado';
         document.getElementById('edit-course-image').value = course.headerOverlayImage || '';
+        document.getElementById('edit-course-audience').value = course.targetAudience || '';
+        
+        // Arrays simples (convertidos para string com \n)
+        document.getElementById('edit-course-objectives').value = (course.learningObjectives || []).join('\n');
+        document.getElementById('edit-course-requirements').value = (course.requirements || []).join('\n');
+        
+        // Arrays/Objetos complexos (convertidos para JSON)
+        document.getElementById('edit-course-modules').value = JSON.stringify(course.modules || [], null, 2);
+        document.getElementById('edit-course-activities').value = JSON.stringify(course.practicalActivities || [], null, 2);
+        document.getElementById('edit-course-details').value = JSON.stringify(course.details || {}, null, 2);
         
         document.getElementById('modalEditCourse-title').innerText = "Editar Curso";
         openModal('modalEditCourse');
       }
     });
     
-    // Salvar (Adicionar/Editar) Curso
+    // Salvar (Adicionar/Editar) Curso (EXPANDIDO)
     document.getElementById('modalEditCourse-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!isAdmin) return;
       
       const courseId = document.getElementById('edit-course-id').value;
-      const courseData = {
-        title: document.getElementById('edit-course-title').value,
-        subtitle: document.getElementById('edit-course-subtitle').value,
-        summary: document.getElementById('edit-course-summary').value,
-        fullDescription: document.getElementById('edit-course-description').value,
-        icon: document.getElementById('edit-course-icon').value,
-        themeColor: document.getElementById('edit-course-color').value,
-        status: document.getElementById('edit-course-status').value,
-        headerOverlayImage: document.getElementById('edit-course-image').value,
-        // TODO: Adicionar campos faltantes (modules, requirements, etc.)
-      };
       
       try {
+        // Parseia campos complexos
+        const learningObjectives = document.getElementById('edit-course-objectives').value.split('\n').filter(Boolean); // Filtra linhas vazias
+        const requirements = document.getElementById('edit-course-requirements').value.split('\n').filter(Boolean);
+        const modules = JSON.parse(document.getElementById('edit-course-modules').value);
+        const practicalActivities = JSON.parse(document.getElementById('edit-course-activities').value);
+        const details = JSON.parse(document.getElementById('edit-course-details').value);
+
+        const courseData = {
+          // Simples
+          title: document.getElementById('edit-course-title').value,
+          subtitle: document.getElementById('edit-course-subtitle').value,
+          summary: document.getElementById('edit-course-summary').value,
+          fullDescription: document.getElementById('edit-course-description').value,
+          icon: document.getElementById('edit-course-icon').value,
+          themeColor: document.getElementById('edit-course-color').value,
+          status: document.getElementById('edit-course-status').value,
+          headerOverlayImage: document.getElementById('edit-course-image').value,
+          targetAudience: document.getElementById('edit-course-audience').value,
+          // Complexos
+          learningObjectives,
+          requirements,
+          modules,
+          practicalActivities,
+          details,
+          // TODO: Adicionar instrutores (atualmente não editável aqui)
+        };
+      
         let docRef;
         if (courseId) {
           // Editar
@@ -1975,7 +2404,7 @@
         loadAdminCourses(); // Recarrega tabela admin
       } catch (error) {
         console.error("Erro ao salvar curso:", error);
-        showNotification('Erro', 'Não foi possível salvar o curso.', 'error');
+        showNotification('Erro', 'Não foi possível salvar. Verifique o formato JSON.', 'error');
       }
     });
 
@@ -2041,7 +2470,7 @@
       }
     });
     
-    // --- NOVO: Listeners e Handlers para Certificados ---
+    // --- Listeners e Handlers para Certificados ---
     
     // Abrir modal de EMITIR Certificado
     document.getElementById('btn-issue-certificate').addEventListener('click', () => {
@@ -2074,8 +2503,7 @@
         conclusionDate: document.getElementById('issue-cert-date').value,
         issuedAt: serverTimestamp(),
         released: false,
-        // TODO: Adicionar instrutores, logos, etc.
-        instructorName: "Instrutor Placeholder",
+        instructorName: "Instrutor Placeholder", // TODO: Pegar do curso
       };
       
       try {
@@ -2083,7 +2511,6 @@
         await addDoc(docRef, certificateData);
         showNotification('Sucesso', 'Certificado emitido e pendente de liberação.', 'success');
         closeModal('modalIssueCertificate');
-        // A tabela de certificados vai atualizar sozinha (onSnapshot)
       } catch (error) {
         console.error("Erro ao emitir certificado:", error);
         showNotification('Erro', 'Não foi possível emitir o certificado.', 'error');
@@ -2096,20 +2523,13 @@
       if (btn && isAdmin && !btn.disabled) {
         const certId = btn.dataset.id;
         const isReleased = btn.dataset.released === 'true';
-        
-        if (isReleased) return; // Já liberado
-        
-        if (!confirm('Tem certeza que deseja liberar este certificado para o aluno?')) {
-          return;
-        }
+        if (isReleased) return; 
+        if (!confirm('Tem certeza que deseja liberar este certificado para o aluno?')) return;
         
         try {
           const docRef = doc(db, 'artifacts', appId, 'public/data/certificates', certId);
-          await updateDoc(docRef, {
-            released: true
-          });
+          await updateDoc(docRef, { released: true });
           showNotification('Sucesso', 'Certificado liberado!', 'success');
-          // Tabela atualiza via onSnapshot
         } catch (error) {
           console.error("Erro ao liberar certificado:", error);
           showNotification('Erro', 'Não foi possível liberar o certificado.', 'error');
@@ -2143,7 +2563,7 @@
         const courseId = card.dataset.courseId;
         const course = localCourses.find(c => c.id === courseId);
         if (course) {
-          renderCourseDetail(course); // A função renderCourseDetail precisa ser recriada
+          renderCourseDetail(course); // Função restaurada
         } else {
           console.error("Curso não encontrado no cache local.");
         }

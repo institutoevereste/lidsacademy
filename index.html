@@ -9,6 +9,31 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0xvVzytOx4dumokND-dr926krSO4-CqU",
+      authDomain: "academylids.firebaseapp.com",
+      projectId: "academylids",
+      storageBucket: "academylids.firebasestorage.app",
+      messagingSenderId: "826478835273",
+      appId: "1:826478835273:web:0995d64419276b932cb198",
+      measurementId: "G-T2TN7FL590"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    window.firebaseAuth = auth;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.signOut = signOut;
+  </script>
+  
   <style>
     :root {
     /* Cores do Logo LIDS */
@@ -533,16 +558,19 @@
     </div>
     <button id="closeLogin" class="btn-ghost px-3 py-2"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <form class="space-y-4">
+    <div id="loginError" class="hidden mb-4 p-3 rounded-lg" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+    <p class="text-sm text-red-600"><i class="fas fa-exclamation-circle mr-2"></i><span id="loginErrorText"></span></p>
+    </div>
+    <form id="loginForm" class="space-y-4">
     <div>
     <label class="text-sm" style="color: var(--text-muted);">E-mail</label>
-    <input type="email" class="w-full mt-1 border rounded-lg px-4 py-3 focus:outline-none focus:ring-2" style="background: var(--surface-light); border-color: var(--border); color: var(--text); --tw-ring-color: var(--primary);" placeholder="admin@evereste.org"/>
+    <input id="loginEmail" type="email" class="w-full mt-1 border rounded-lg px-4 py-3 focus:outline-none focus:ring-2" style="background: var(--surface-light); border-color: var(--border); color: var(--text); --tw-ring-color: var(--primary);" placeholder="admin@evereste.org" required/>
     </div>
     <div>
     <label class="text-sm" style="color: var(--text-muted);">Senha</label>
-    <input type="password" class="w-full mt-1 border rounded-lg px-4 py-3 focus:outline-none focus:ring-2" style="background: var(--surface-light); border-color: var(--border); color: var(--text); --tw-ring-color: var(--primary);" placeholder="••••"/>
+    <input id="loginPassword" type="password" class="w-full mt-1 border rounded-lg px-4 py-3 focus:outline-none focus:ring-2" style="background: var(--surface-light); border-color: var(--border); color: var(--text); --tw-ring-color: var(--primary);" placeholder="••••" required/>
     </div>
-    <button type="button" class="btn-primary w-full"><i class="fa-solid fa-right-to-bracket mr-2"></i>Entrar</button>
+    <button id="loginBtn" type="submit" class="btn-primary w-full"><i class="fa-solid fa-right-to-bracket mr-2"></i>Entrar</button>
     </form>
     </div>
   </div>
@@ -938,6 +966,79 @@
 
     closeEnroll.addEventListener('click', () => modalEnroll.classList.remove('show'));
     modalEnroll.addEventListener('click', (e) => { if (e.target === modalEnroll) modalEnroll.classList.remove('show'); });
+
+    // Firebase Authentication
+    const loginForm = document.getElementById('loginForm');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginError = document.getElementById('loginError');
+    const loginErrorText = document.getElementById('loginErrorText');
+    const loginBtn = document.getElementById('loginBtn');
+
+    // Handle Login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.classList.add('hidden');
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Entrando...';
+
+      try {
+        const userCredential = await window.signInWithEmailAndPassword(
+          window.firebaseAuth,
+          loginEmail.value,
+          loginPassword.value
+        );
+        
+        // Login bem-sucedido
+        console.log('Login bem-sucedido:', userCredential.user);
+        modalLogin.classList.remove('show');
+        
+        // Redirecionar para área administrativa (você pode criar essa página)
+        alert('Login realizado com sucesso! Redirecionando para área administrativa...');
+        // window.location.href = 'admin.html'; // Descomente quando criar a página admin
+        
+      } catch (error) {
+        console.error('Erro no login:', error);
+        loginError.classList.remove('hidden');
+        
+        // Mensagens de erro em português
+        switch (error.code) {
+          case 'auth/invalid-email':
+            loginErrorText.textContent = 'E-mail inválido.';
+            break;
+          case 'auth/user-disabled':
+            loginErrorText.textContent = 'Usuário desativado.';
+            break;
+          case 'auth/user-not-found':
+            loginErrorText.textContent = 'Usuário não encontrado.';
+            break;
+          case 'auth/wrong-password':
+            loginErrorText.textContent = 'Senha incorreta.';
+            break;
+          case 'auth/invalid-credential':
+            loginErrorText.textContent = 'Credenciais inválidas. Verifique seu e-mail e senha.';
+            break;
+          case 'auth/too-many-requests':
+            loginErrorText.textContent = 'Muitas tentativas. Tente novamente mais tarde.';
+            break;
+          default:
+            loginErrorText.textContent = 'Erro ao fazer login. Tente novamente.';
+        }
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i>Entrar';
+      }
+    });
+
+    // Monitor Authentication State
+    window.onAuthStateChanged(window.firebaseAuth, (user) => {
+      if (user) {
+        console.log('Usuário autenticado:', user.email);
+        // Você pode atualizar a UI aqui para mostrar que o usuário está logado
+      } else {
+        console.log('Usuário não autenticado');
+      }
+    });
   </script>
 </body>
 </html>

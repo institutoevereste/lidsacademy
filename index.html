@@ -2487,12 +2487,17 @@
           await loadCourses();
         }
         
-        if (localCourses.length === 0) {
-           form.innerHTML = '<p class="text-sm text-gray-500">Nenhum curso cadastrado para definir senhas.</p>';
+        // FILTRO ADICIONADO: Mostrar apenas cursos relevantes
+        const relevantCourses = localCourses.filter(
+          course => course.status === 'aberto' || course.status === 'em_breve'
+        );
+        
+        if (relevantCourses.length === 0) {
+           form.innerHTML = '<p class="text-sm text-gray-500">Nenhum curso "Aberto" ou "Em Breve" encontrado para definir senhas.</p>';
            return;
         }
         
-        form.innerHTML = localCourses.map(course => `
+        form.innerHTML = relevantCourses.map(course => `
           <div>
             <label class="admin-label" for="pass-${course.id}">${course.title}</label>
             <input type="text" id="pass-${course.id}" data-course-id="${course.id}" class="admin-input" value="${passwords[course.id] || ''}" placeholder="Senha para ${course.title}">
@@ -3270,6 +3275,7 @@
   </script>
 </body>
 </html>
+
 
 
 

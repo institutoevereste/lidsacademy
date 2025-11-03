@@ -390,11 +390,23 @@
     }
 
     .badge-soon {
-      background: rgba(255, 255, 255, 0.15); /* Alterado para ser mais neutro */
-      border-color: rgba(255, 255, 255, 0.3);
-      color: #ffffff;
-      opacity: 0.9;
+      background: rgba(255, 200, 87, 0.15);
+      border-color: rgba(255, 200, 87, 0.4);
+      color: #d97706;
     }
+    
+    /* Badge Em Breve Atualizado */
+    .badge-soon-updated {
+      display: inline-block;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.1);
+      border: 1px solid rgba(0,0,0,0.15);
+      color: rgba(0,0,0,0.4);
+      font-size: 13px;
+    }
+
 
     /* Modal */
     .modal-backdrop {
@@ -843,9 +855,9 @@
       <!-- Cursos Futuros -->
       <div class="reveal">
         <h3 class="text-3xl font-bold mb-8 text-center" style="color: var(--text);">Em Breve</h3>
-        <div id="courses-list-soon" class="grid md:grid-cols-3 gap-6">
+        <div id="courses-list-soon" class="flex flex-wrap gap-6 justify-center">
           <!-- Cards de cursos com status 'em_breve' -->
-           <p class="text-center md:col-span-3 text-gray-500">A carregar futuros cursos...</p>
+           <p class="text-center w-full text-gray-500">A carregar futuros cursos...</p>
         </div>
       </div>
     </section>
@@ -867,7 +879,7 @@
         </div>
         <div class="reveal">
           <div class="card-3d p-8">
-            <img src="https://i.postimg.cc/SKQh2j5n/logo-evereste-2025-horizontal-2.png" alt="Instituto Evereste" class="w-full h-auto rounded-lg p-6" style="background: rgba(0,102,204,0.03);" />
+            <img src="https://i.postimg.cc/0NBrsPL3/treinamento-notion-01.jpg" alt="Equipa em treinamento" class="w-full h-auto rounded-lg" />
             <p class="mt-6 text-center font-medium" style="color: var(--text-muted);">Uma iniciativa do Instituto Evereste para formações transformadoras.</p>
           </div>
         </div>
@@ -919,9 +931,7 @@
           <i class="fa-solid fa-chalkboard-user"></i> Instrutores
         </a>
         <!-- REMOVIDO: Link de Certificados -->
-        <a href="#config" class="admin-nav-link" data-target="admin-config">
-          <i class="fa-solid fa-gear"></i> Configurações
-        </a>
+        <!-- REMOVIDO: Link de Configurações -->
         <div class="mt-auto">
           <a href="#" id="admin-logout-nav" class="admin-nav-link !border-transparent hover:!bg-red-100 hover:!text-red-700"> <!-- Classes de hover alteradas -->
             <i class="fa-solid fa-right-from-bracket"></i> Sair
@@ -936,7 +946,7 @@
         <!-- Seção Dashboard -->
         <section id="admin-dashboard" class="admin-section">
           <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"> <!-- Alterado para 2 colunas -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="card-3d !p-6">
               <h3 class="text-sm font-semibold text-gray-500 uppercase">Total Matrículas</h3>
               <p id="stats-total-enrollments" class="text-3xl font-bold text-blue-600">0</p>
@@ -1028,15 +1038,7 @@
         <!-- Seção Configurações -->
         <section id="admin-config" class="admin-section hidden">
           <h1 class="text-3xl font-bold mb-8">Configurações</h1>
-          <div class="card-3d !p-6 max-w-2xl">
-            <h3 class="text-lg font-bold mb-4">Senhas de Check-in</h3>
-            <p class="text-sm text-gray-500 mb-6">Defina aqui as senhas que os instrutores irão fornecer aos alunos para o check-in.</p>
-            <div id="checkin-passwords-form" class="space-y-4">
-              <!-- Campos de senha serão injetados aqui -->
-              <p class="text-sm text-gray-400">A carregar senhas dos cursos...</p>
-            </div>
-            <button id="save-checkin-passwords-btn" class="btn-primary mt-6"><i class="fas fa-save mr-2"></i>Salvar Senhas</button>
-          </div>
+          <!-- REMOVIDO: Card de Senhas de Check-in -->
 
           <div class="card-3d !p-6 max-w-2xl mt-8">
             <h3 class="text-lg font-bold mb-4">Popular Banco de Dados</h3>
@@ -1139,7 +1141,7 @@
     </div>
   </div>
 
-  <!-- Modal Check-in -->
+  <!-- Modal Check-in (SENHA FIXA) -->
   <div id="modalCheckin" class="modal-backdrop">
     <div class="modal-card modal-card-sm p-8">
       <div class="flex items-start justify-between mb-6">
@@ -1497,7 +1499,7 @@
     const instructorsCollection = collection(db, `artifacts/${appId}/public/data/instructors`);
     const enrollmentsCollection = collection(db, `artifacts/${appId}/public/data/enrollments`);
     const checkinsCollection = collection(db, `artifacts/${appId}/public/data/checkins`);
-    const passwordsCollection = collection(db, `artifacts/${appId}/public/data/checkinPasswords`);
+    // REMOVIDO: passwordsCollection
     // REMOVIDO: certificatesCollection
     const ratingsCollection = collection(db, `artifacts/${appId}/public/data/ratings`);
     const adminsCollection = collection(db, 'admins'); // Coleção raiz
@@ -1854,15 +1856,15 @@
       }
       
       if (soonCourses.length === 0) {
-        coursesListSoon.innerHTML = `<p class="text-center md:col-span-3 text-gray-500">Nenhum curso futuro programado.</p>`;
+        coursesListSoon.innerHTML = `<p class="text-center w-full text-gray-500">Nenhum curso futuro programado.</p>`;
       } else {
          soonCourses.forEach(course => {
-            // CORREÇÃO: Aplicar estilo indisponível
+            // Card "Em Breve" com aparência indisponível
             const cardHTML = `
-              <div class="card-3d p-5 course-card-solid opacity-70" style="background: ${course.themeColor || '#6a4c93'}; filter: grayscale(50%);">
-                <span class="badge-soon mb-3"><i class="fa-solid fa-clock mr-2"></i>Em breve</span>
-                <h4 class="font-bold text-lg mb-2">${course.title}</h4>
-                <p class="text-sm opacity-90">${course.instructors ? course.instructors.map(i => i.name).join(', ') : 'Instrutores a definir'}</p>
+              <div class="card-3d p-5 bg-gray-100 border-gray-200 shadow-inner opacity-70">
+                <span class="badge-soon-updated mb-3"><i class="fa-solid fa-clock mr-2"></i>Em breve</span>
+                <h4 class="font-bold text-lg mb-2 text-gray-700">${course.title}</h4>
+                <p class="text-sm text-gray-500">${course.instructors ? course.instructors.map(i => i.name).join(', ') : 'Instrutores a definir'}</p>
               </div>
             `;
             coursesListSoon.innerHTML += cardHTML;
@@ -2110,7 +2112,7 @@
       _openModal(modalCheckin);
     }
     
-    // Submeter formulário de Check-in
+    // Submeter formulário de Check-in (SENHA FIXA)
     document.getElementById('checkinForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) return;
@@ -2129,11 +2131,11 @@
       
       try {
         // A lógica de validação da senha está 100% nas Regras de Segurança do Firestore
-        // Apenas tentamos escrever o documento com a senha
+        // A regra vai comparar o campo 'password' com a string fixa
         await addDoc(checkinsCollection, {
           userId: currentUser.uid,
           courseId: courseId,
-          password: password, // A regra vai comparar isso
+          password: password, // A regra vai comparar isso com "@Academy3v3r3st3"
           createdAt: serverTimestamp()
         });
         
@@ -2272,7 +2274,7 @@
           case 'admin-cursos': loadAdminCourses(); break;
           case 'admin-matriculas': loadAdminEnrollments(); break;
           case 'admin-instrutores': loadAdminInstructors(); break;
-          case 'admin-config': loadCheckinPasswords(); break;
+          // REMOVIDO: case 'admin-config'
         }
       }
     });
@@ -2367,7 +2369,7 @@
         await loadCourses(); // Garante que temos os dados
       }
       
-      // NOVO FILTRO: Mostrar apenas cursos 'aberto' ou 'em_breve'
+      // FILTRO: Mostrar apenas cursos 'aberto' ou 'em_breve'
       const visibleCourses = localCourses.filter(
         course => course.status === 'aberto' || course.status === 'em_breve'
       );
@@ -2380,7 +2382,6 @@
       tableBody.innerHTML = visibleCourses.map(course => {
         let statusClass = 'bg-yellow-100 text-yellow-700'; // Default 'em_breve'
         if (course.status === 'aberto') statusClass = 'bg-green-100 text-green-700';
-        // if (course.status === 'fechado') statusClass = 'bg-gray-100 text-gray-700'; // Removido pois agora são filtrados
 
         // Tenta buscar a data
         const courseDate = course.details && course.details.Data ? course.details.Data : 'N/A';
@@ -2475,68 +2476,8 @@
       `).join('');
     }
     
-    // Carregar Senhas de Check-in (Admin)
-    async function loadCheckinPasswords() {
-      const form = document.getElementById('checkin-passwords-form');
-      form.innerHTML = '<p class="text-sm text-gray-400">A carregar senhas...</p>';
-      
-      try {
-        const docRef = doc(passwordsCollection, 'allCourses');
-        const docSnap = await getDoc(docRef);
-        const passwords = docSnap.exists() ? docSnap.data() : {};
-        
-        if (localCourses.length === 0) {
-          await loadCourses();
-        }
-        
-        // FILTRO ADICIONADO: Mostrar apenas cursos relevantes
-        const relevantCourses = localCourses.filter(
-          course => course.status === 'aberto' || course.status === 'em_breve'
-        );
-        
-        if (relevantCourses.length === 0) {
-           form.innerHTML = '<p class="text-sm text-gray-500">Nenhum curso "Aberto" ou "Em Breve" encontrado para definir senhas.</p>';
-           return;
-        }
-        
-        form.innerHTML = relevantCourses.map(course => `
-          <div>
-            <label class="admin-label" for="pass-${course.id}">${course.title}</label>
-            <input type="text" id="pass-${course.id}" data-course-id="${course.id}" class="admin-input" value="${passwords[course.id] || ''}" placeholder="Senha para ${course.title}">
-          </div>
-        `).join('');
-        
-      } catch (e) {
-        console.error("Erro ao carregar senhas:", e);
-        form.innerHTML = `<p class="text-sm text-red-500">Erro ao carregar senhas: ${e.message}</p>`;
-      }
-    }
-    
-    // Salvar Senhas de Check-in
-    document.getElementById('save-checkin-passwords-btn').addEventListener('click', async (e) => {
-      const btn = e.target.closest('button');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i>A salvar...';
-      
-      const passwordData = {};
-      document.querySelectorAll('#checkin-passwords-form input').forEach(input => {
-        if (input.value) {
-          passwordData[input.dataset.courseId] = input.value;
-        }
-      });
-      
-      try {
-        const docRef = doc(passwordsCollection, 'allCourses');
-        await setDoc(docRef, passwordData, { merge: true });
-        showToast("Senhas de check-in salvas!", "success");
-      } catch (e) {
-        console.error("Erro ao salvar senhas:", e);
-        showToast(`Erro ao salvar senhas: ${e.message}`, "error");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar Senhas';
-      }
-    });
+    // REMOVIDO: loadCheckinPasswords
+    // REMOVIDO: Salvar Senhas de Check-in
 
     // --- ADMIN: ABRIR MODAIS ---
     
